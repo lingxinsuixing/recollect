@@ -1,0 +1,15 @@
+[package]
+name = "rc-derive"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+rc-store  = { path = "../rc-store" }
+rc-memory = { path = "../rc-memory" }
+rc-llm    = { path = "../rc-llm" }
+serde     = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }   # T3 的 `DeriveError` 用；对齐 rc-memory 的写法（workspace 档 = "2"）
+
+[dev-dependencies]
+tempfile = { workspace = true }    # T4 的 `derive_pass.rs` 用 `tempdir`；不写 T4 再补一次

@@ -1,0 +1,5 @@
+error[E0599]: no associated function or constant named `new` found for struct `TranscriptHandle` in the current scope
+ --> tests/compile_fail/construct_handle_from_outside.rs:2:42
+  |
+2 |     let _h = rc_store::TranscriptHandle::new(std::path::Path::new("x.db"));
+  |                                          ^^^ associated function or constant not found in `TranscriptHandle`

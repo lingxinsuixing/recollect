@@ -1,0 +1,9 @@
+{
+  "id": "4444444444444444444444444444444f",
+  "created": 1792000000,
+  "model": "sensenova-6.8-flash-lite",
+  "object": "chat.completion",
+  "choices": [ { "index": 0, "message": { "role": "assistant", "reasoning": "The user asked about a fact, the budget is gone." }, "finish_reason": "length" } ],
+  "usage": { "prompt_tokens": 64, "completion_tokens": 64, "total_tokens": 128, "completion_tokens_details": { "reasoning_tokens": 64 }, "prompt_tokens_details": { "cached_tokens": 0 } },
+  "request_id": "5555555555555555555555555555555f"
+}

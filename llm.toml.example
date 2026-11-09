@@ -1,0 +1,79 @@
+# `hub cycle once --llm-config <这个文件>` 的形状（§4.8 ②：座位来源之二）。
+#
+# 这一份是**例子**，不是配置：把它复制成本机的 `llm.toml` 再改，才是"这台机器配好了 live"。
+# 操作员照抄就能起，起不来的那一支由 `rc_llm_cfg::load()` 在解析阶段拒掉（它不给默认值，
+# 于是"没配"与"配坏了"是两种后果，不是同一条静默）。
+#
+# 三条硬规矩，都在仓里有执法点，别改：
+# 1. **这个文件里没有密钥值。** 一个字节都不许有。每一座只写 `secret_ref = "箱:格"`：
+#    值住在操作员自己那把箱里，hub 这一批没有读它的手（实施计划 §4.8 裁定 A）。
+#    斜杠形状（`kms/deepseek`）一律被拒（`rc-llm-cfg/src/keys.rs` 的 `check_secret_ref`，
+#    它同时要求两侧都是 safe token）——用 `:` 不用 `/`，因为 `safe_token` 的白名单不含斜杠。
+# 2. `provider` 与 `[[providers.endpoint]]` **二选一**，不能同时给、也不能都不给
+#    （`read_seat` 的那条 `provider.is_some() == endpoint.is_some()`）。
+#    走 `provider` 这一支时，`(provider, model)` 必须是 `rc-llm-http/src/preset.rs` 的 `ROWS`
+#    表里的**复合键**逐字（大小写也算，同一个模型名跨家不是同一个东西）。
+#    查不到 ⇒ hub 启动即响亮失败，**不回落默认**（设计节 1 那条接缝）。
+# 3. `model` 逐字抄表，不许归一、不许"顺手改成小写"。
+#
+# ── 这台机器该怎么设身份那一格 ────────────────────────────────────────────────
+# live 那一支还要一个环境变量：`RECOLLECT_DEVICE_ID`，它是这台机器的名字，也是
+# `Rotating` 换座状态的主语（与 `hook`/`mcp` 的 device 主语同名、同一套过形规则，全仓只有一个命名空间）。
+#
+#   设法：`export RECOLLECT_DEVICE_ID=dev-laptop`（Windows 下 `$env:RECOLLECT_DEVICE_ID = "dev-laptop"`）
+#
+# 这个值的形状与 `device_subject`/`rc_contract::safe_token` 同一条规则：不带空白、不带斜杠、
+# 不长成一个路径。没设或形状不对 ⇒ hub **既不读也不写、stderr 响亮一句**（缺身份归 hub 那一格），
+# 退出码 3。它**不会**提示你输入：hub 是后台作业，非 TTY 一律不开口问东西，也不为自己开控制台。
+#
+# ── 座位 ────────────────────────────────────────────────────────────────────
+# 顺序就是换座的顺序：第一条是主座，后面的是备座（`Rotating` 按列表序前进，段 B 接落盘状态）。
+# 主座的名字与模型名都是表上的行，抄下来就能起；换厂家 = 换这一对，别自己造名字。
+
+[[providers]]
+provider = "deepseek"
+model = "deepseek-chat"
+secret_ref = "kms:deepseek_key"
+
+[[providers]]
+provider = "sensenova"
+model = "sensenova-6.8-flash-lite"
+secret_ref = "kms:sensenova_key"
+
+# 备座想要 `sensenova` 的 `kimi-k3` 时，加的是**这一对**（表上真有这一行）：
+#
+#   [[providers]]
+#   provider = "sensenova"
+#   model = "kimi-k3"
+#   secret_ref = "kms:sensenova_kimi_key"
+#
+# 厂家不在表上（自建网关、内网代理）才走 custom 通道：`provider` 那一行整个删掉，
+# 换成下面这一段，`protocol` 只许 `openai-chat` 与 `anthropic-messages` 两个名字之一。
+# 它照样要有 `model`——custom 那一侧没有 preset 行可查，模型名只能来自配置。
+#
+#   [[providers]]
+#   model = "some-gateway-model"
+#   secret_ref = "kms:gateway_key"
+#
+#   [providers.endpoint]
+#   base_url = "http://127.0.0.1:8080/v1"
+#   protocol = "openai-chat"
+#
+# custom 座也可以用可选的 `budget` 覆盖单次输出预算（token）；缺省是
+# `rc-llm-http::MAX_BUDGET` (32_000)。只为确实需要更大思考预算的座位开，
+# 超过对端上界会在发送时被拒（400），不是静默截断。
+#
+#   budget = 524288
+#
+# `derive_budget` 只覆盖推导作业；抽取/审计/去重仍用 `budget`（缺省 32_000）。
+# 推导需要更长思考链时用这一格，避免把每个作业都拖慢。
+#
+#   derive_budget = 524288
+#
+# `temperature` 是采样温度，取值 `0.0..=2.0`（闭区间）。**不写这一格 = 不发它，走 provider
+# 默认**（OpenAI 兼容协议通常 1.0）——"没配"与"配成 0.0"是两件不同的事，别当成默认值。
+# 用途：抽取/审核要的是"同一批语料每次抽出同一批草稿"，建议显式写 `0.0` 把采样抖动关掉；
+# 推导/起名这类要发散的工作才需要调高。锁死温度的行（如 `sensenova` 的 `kimi-k3` 只许 1.0）
+# 若配了别的值，会在 hub 启动时被拒（`rc-llm-http` 的 `check_params`），不会静默改成合法值。
+#
+#   temperature = 0.0

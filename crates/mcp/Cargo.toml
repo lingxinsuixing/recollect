@@ -1,0 +1,37 @@
+[package]
+name = "mcp"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "recollect-mcp"
+path = "src/main.rs"
+
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+rc-ledger = { path = "../rc-ledger" }
+rc-agent = { path = "../rc-agent" }
+# 审查轴水位的唯一写入口（`rc_distill::review::run::write_watermark`）：report 臂在
+# enqueue 之后补写 "report" 的水位——report 项 pending 期间实表 +1、水位 +0 会让
+# doctor 的「水位和==实表」误报、hub pending 漏数（W34 评审缺陷②）。不本地复刻这 20 行。
+rc-distill = { path = "../rc-distill" }
+# 核心陪伴层（`core.db`）：工具面的 `core_*` 全部转调这里的 `CoreStore`，
+# 本文件不自己解密密文、也不拼表名（§10.2）。
+rc-core = { path = "../rc-core" }
+rc-llm = { path = "../rc-llm" }
+# 节点模式：设备主语由私钥导出，状态文件由 node 独占解析。
+node = { path = "../node" }
+rc-net = { path = "../rc-net" }
+clap = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+rc-memory = { path = "../rc-memory" }
+rc-index = { path = "../rc-index" }
+# 测试要预注册 agent（`CoreStore::open(dir).register_agent("agent-a")`），
+# 那条路径与生产面是同一个入口。
+rc-core = { path = "../rc-core" }
+# notebook_isolation.rs 的逐表行数对账：只读打开三个库文件数行（零耦合的判据面）。
+rusqlite = { workspace = true }
+tempfile = { workspace = true }

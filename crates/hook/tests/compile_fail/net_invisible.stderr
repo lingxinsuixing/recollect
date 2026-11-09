@@ -1,0 +1,7 @@
+error[E0432]: unresolved import `rc_net`
+ --> tests/compile_fail/net_invisible.rs:4:5
+  |
+4 | use rc_net::Transport;
+  |     ^^^^^^ use of unresolved module or unlinked crate `rc_net`
+  |
+  = help: if you wanted to use a crate named `rc_net`, use `cargo add rc_net` to add it to your `Cargo.toml`

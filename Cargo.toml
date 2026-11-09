@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = ["crates/rc-contract", "crates/rc-store", "crates/rc-ledger", "crates/hub", "crates/doctor",
+           "crates/rc-memory", "crates/rc-index", "crates/rc-search", "crates/rc-agent",
+           "crates/hook", "crates/mcp", "crates/rc-llm", "crates/rc-distill",
+           "crates/rc-derive", "crates/rc-diag",
+           "crates/rc-llm-http", "crates/rc-llm-cfg", "crates/rc-net", "crates/node",
+           "crates/rc-secret", "crates/rc-cycle", "crates/rc-core", "eval"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[workspace.dependencies]
+rusqlite = { version = "0.40", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11"
+unicode-normalization = "0.1"
+jieba-rs = "0.11"
+clap = { version = "4.6", features = ["derive"] }
+thiserror = "2"
+trybuild = "1"
+tempfile = "3"
+# `ureq` 只在 `rc-llm-http` 的清单里出现（判据 N4：网络出点唯一）。
+ureq = { version = "3", default-features = false, features = ["rustls"] }
+# 配置面只要读 `llm.toml`，不要 TLS：`default-features = false` 是边界声明的一部分。
+toml = { version = "1", default-features = false, features = ["std", "serde", "parse"] }
+ed25519-dalek = "2"
+# TLS 传输层（S4a）：只为 `rc-net` 开。`ring` 后端与锁里已有的那一份一致，
+# 不把 aws-lc-rs 拉进来；TLS1.2 默认关闭，握手优先 TLS1.3。
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "logging"] }
+rustls-pemfile = "2"
+# 自签证书生成。默认特性就是 `ring`，不会拖进 aws-lc-rs。
+rcgen = "0.13"
+base64 = "0.22"
+getrandom = "0.3"
+flate2 = "1"
+zeroize = "1"
+argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }

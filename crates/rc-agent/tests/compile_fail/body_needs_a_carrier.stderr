@@ -1,0 +1,15 @@
+warning: unreachable statement
+ --> tests/compile_fail/body_needs_a_carrier.rs:6:5
+  |
+5 |     let block: InjectionBlock = panic!();
+  |                                 -------- any code following this expression is unreachable
+6 |     let raw: String = block.inner;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unreachable statement
+  |
+  = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+error[E0616]: field `inner` of struct `InjectionBlock` is private
+ --> tests/compile_fail/body_needs_a_carrier.rs:6:29
+  |
+6 |     let raw: String = block.inner;
+  |                             ^^^^^ private field

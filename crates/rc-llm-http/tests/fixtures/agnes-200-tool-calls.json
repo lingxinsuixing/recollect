@@ -1,0 +1,14 @@
+{
+  "id": "1111111111111111111111111111111f",
+  "created": 1792000000,
+  "model": "agnes-3.0-flash",
+  "object": "chat.completion",
+  "choices": [
+    {
+      "finish_reason": "tool_calls",
+      "index": 0,
+      "message": { "content": "", "role": "assistant", "tool_calls": [ { "id": "call_0", "type": "function", "function": { "name": "noop", "arguments": "{}" } } ] }
+    }
+  ],
+  "usage": { "completion_tokens": 4, "prompt_tokens": 512, "total_tokens": 516 }
+}
