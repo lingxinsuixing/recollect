@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reliability: offline, local distillation and merge-back — recollect</title>
+<link rel="canonical" href="https://lingxinsuixing.github.io/recollect/reliability.html">
+<meta name="description" content="Two gates, one day down and five days down: keep distilling offline and merge back in a fixed order when the network returns; plus backup takeover and isolation from the old hub.">
+<meta name="theme-color" content="#0a0805">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reliability — recollect">
+<meta property="og:description" content="Two gates, one day down and five days down: offline distillation and an ordered merge back.">
+<meta property="og:image" content="https://lingxinsuixing.github.io/recollect/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<script>(function(){var m=location.search.match(/[?&]theme=([a-z-]+)/),t=m?m[1]:"gold";document.documentElement.dataset.theme=(t==="default"||t==="cold")?"":t;})();</script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060607'/%3E%3Crect x='10' y='10' width='12' height='12' transform='rotate(45 16 16)' fill='none' stroke='%23c8a468' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/theme-gold.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  .sim { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: start; }
+  .sim__left { border: 1px solid var(--line); background: rgba(8,8,10,.5); padding: clamp(18px, 2.4vw, 28px); }
+
+  .topo { display: flex; align-items: center; gap: 14px; margin: 8px 0 30px; }
+  .topo__box {
+    flex: 0 0 auto; padding: 12px 16px; border: 1px solid var(--line); min-width: 132px;
+    transition: border-color .5s, background .5s;
+  }
+  .topo__box b { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); font-weight: 400; }
+  .topo__box span { display: block; margin-top: 6px; font-size: 14px; color: var(--bone); }
+  .topo__box.is-part { border-color: rgba(196,99,67,.55); background: rgba(196,99,67,.05); animation: cutPulse .55s var(--ease-out); }
+  @keyframes cutPulse {
+    25% { transform: translateX(-2px); }
+    55% { transform: translateX(2px); }
+    80% { transform: translateX(-1px); }
+  }
+  .topo__link { flex: 1 1 auto; height: 1px; background: var(--line-3); position: relative; transition: background .5s; min-width: 40px; }
+  .topo__link::after {
+    content: ""; position: absolute; left: 0; top: -1px; width: 3px; height: 3px; background: var(--brass);
+    animation: travel 2.6s linear infinite;
+  }
+  @keyframes travel { from { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { left: 100%; opacity: 0; } }
+  .sim.is-part .topo__link { background: repeating-linear-gradient(to right, rgba(196,99,67,.55) 0 6px, transparent 6px 12px); }
+  .sim.is-part .topo__link::after { display: none; }
+  .topo__state {
+    position: absolute; left: 50%; top: -22px; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--rust); white-space: nowrap; opacity: 0;
+    transition: opacity .4s;
+  }
+  .sim.is-part .topo__state { opacity: 1; }
+
+  .clock { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .clock__v { font-family: var(--font-display); font-weight: 300; font-size: clamp(38px, 4.6vw, 58px); line-height: 1; font-variant-numeric: tabular-nums; }
+  .clock__u { font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); }
+  .clock__s { margin-left: auto; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--brass); }
+
+  .track { position: relative; height: 58px; margin: 8px 0 26px; }
+  .track__rail { position: absolute; left: 0; right: 0; top: 26px; height: 1px; background: var(--line); }
+  .track__fill { position: absolute; left: 0; top: 26px; height: 1px; background: var(--brass); width: 0; transition: width .6s var(--ease-out); }
+  .track__mark { position: absolute; top: 18px; width: 1px; height: 17px; background: var(--line-3); }
+  .track__mark.is-on { background: var(--rust); }
+  .track__lbl { position: absolute; top: 40px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .1em; color: var(--muted); white-space: nowrap; }
+  .track__lbl.is-on { color: var(--rust); }
+  .track__head { position: absolute; top: 21px; width: 11px; height: 11px; margin-left: -5px; border: 1px solid var(--brass); background: var(--ink-0); transform: rotate(45deg); transition: left .6s var(--ease-out); }
+
+  .simbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .simbtns .ctl {
+    padding: 9px 13px; border: 1px solid var(--line); font-family: var(--font-mono); font-size: 9.5px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--muted); transition: all .3s;
+  }
+  .simbtns .ctl:hover { border-color: var(--line-3); color: var(--bone); }
+  .simbtns .ctl:disabled { opacity: .3; cursor: not-allowed; }
+  .simbtns .ctl--danger { border-color: rgba(196,99,67,.35); color: var(--rust); }
+  .simbtns .ctl--danger:hover { background: rgba(196,99,67,.08); }
+  .simbtns .ctl--ok { border-color: rgba(134,163,126,.35); color: var(--sage); }
+  .simbtns .ctl--ok:hover { background: rgba(134,163,126,.08); }
+  .simbtns .ctl--cue { animation: cueGlow 2.2s var(--ease) infinite; }
+  @keyframes cueGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196,99,67,.0); }
+    50% { box-shadow: 0 0 0 4px rgba(196,99,67,.10); }
+  }
+  .simhint {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 16px; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: .12em; color: var(--brass);
+  }
+  .simhint::before {
+    content: ""; width: 5px; height: 5px; transform: rotate(45deg);
+    background: var(--brass); flex: 0 0 auto;
+  }
+
+  .readout { border: 1px solid var(--line); background: rgba(10,10,12,.6); }
+  .readout__head { padding: 14px 18px; border-bottom: 1px solid var(--line-2); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .readout__title { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .readout__row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--line-2); }
+  .readout__row:last-child { border-bottom: 0; }
+  .readout__k { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .04em; color: var(--muted-2); }
+  .readout__v { font-family: var(--font-mono); font-size: 12px; color: var(--bone); font-variant-numeric: tabular-nums; }
+  .readout__v.is-warn { color: var(--rust); }
+  .readout__v.is-ok { color: var(--sage); }
+  .readout__v.is-brass { color: var(--brass-2); }
+
+  .states { display: flex; flex-wrap: wrap; gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .st {
+    flex: 1 1 150px; padding: 20px 16px; border-right: 1px solid var(--line-2); position: relative;
+    transition: background .5s;
+  }
+  .st:last-child { border-right: 0; }
+  .st.is-on { background: rgba(200,164,104,.07); }
+  .st.is-on::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--brass); }
+  .st__n { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; color: var(--muted-2); }
+  .st.is-on .st__n { color: var(--brass); }
+  .st__t { margin-top: 8px; font-family: inherit; font-size: 14px; color: var(--bone-2); }
+  .st__t em { font-family: var(--font-mono); font-size: 9px; font-style: normal; letter-spacing: .06em; color: var(--muted-2); margin-left: 7px; }
+  .st__d { margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  .order { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); }
+  .order__step { padding: 22px 18px; border-right: 1px solid var(--line-2); position: relative; transition: background .45s; }
+  .order__step:last-child { border-right: 0; }
+  .order__step.is-on { background: rgba(200,164,104,.08); }
+  .order__step.is-done { background: rgba(134,163,126,.05); }
+  .order__step.is-done::after {
+    content: "✓"; position: absolute; top: 12px; right: 14px;
+    font-family: var(--font-mono); font-size: 10px; color: var(--sage);
+    animation: tickIn .35s var(--ease-out) both;
+  }
+  @keyframes tickIn {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: none; }
+  }
+  .order__n { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; color: var(--muted-2); }
+  .order__t { margin-top: 8px; font-family: var(--font-display); font-weight: 300; font-size: 20px; }
+  .order__d { margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  .mathrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-2); border: 1px solid var(--line-2); }
+  .mathrow > div { background: var(--ink-0); padding: 20px 18px; }
+  .mathrow b { display: block; font-family: var(--font-display); font-weight: 300; font-size: 26px; color: var(--brass-2); }
+  .mathrow span { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  @media (max-width: 1000px) {
+    .sim { grid-template-columns: 1fr; }
+    .order { grid-template-columns: 1fr 1fr; }
+    .order__step:nth-child(2) { border-right: 0; }
+    .order__step:nth-child(-n+2) { border-bottom: 1px solid var(--line-2); }
+    .mathrow { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .topo { gap: 8px; }
+    .topo__box { min-width: 0; flex: 1 1 0; padding: 10px 12px; }
+    .topo__link { min-width: 24px; }
+    .panel .spec, .panel .spec thead, .panel .spec tbody, .panel .spec tr, .panel .spec th, .panel .spec td { display: block; width: auto; }
+    .panel .spec thead { display: none; }
+    .panel .spec tr { padding: 15px 0; border-bottom: 1px solid var(--line-2); }
+    .panel .spec tr:last-child { border-bottom: 0; }
+    .panel .spec td { border: 0; padding: 2px 0; white-space: normal; }
+    .panel .spec td:first-child { font-size: 12px; color: var(--brass-2); }
+    .panel .spec td:nth-child(2) { font-size: 14px; color: var(--bone); }
+    .panel .spec td:last-child { margin-top: 4px; font-size: 12px; line-height: 1.7; color: var(--muted); }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" data-progress></div>
+<div class="plate-layer plate-layer--ambient" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__brand" href="index.html" aria-label="recollect home">
+    <span class="nav__mark" aria-hidden="true"></span>
+    <span class="nav__word">recollect</span>
+    <span class="nav__sub">agent-native memory</span>
+  </a>
+  <nav class="nav__links" aria-label="Main navigation">
+    <a href="index.html" data-nav-link>Overview</a>
+    <a href="companion.html" data-nav-link>Companion</a>
+    <a href="engineering.html" data-nav-link>Engineering</a>
+    <a href="architecture.html" data-nav-link>Architecture</a>
+    <a href="memory.html" data-nav-link>Memory model</a>
+    <a href="pipeline.html" data-nav-link>Extraction</a>
+    <a href="reliability.html" data-nav-link>Reliability</a>
+    <a href="evidence.html" data-nav-link>Evidence</a>
+    <a href="solo.html" data-nav-link>Single device</a>
+  </nav>
+  <div class="nav__meta">
+    <a class="nav__lang" href="../reliability.html" aria-label="切换到中文" hreflang="zh-CN">中文</a>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="nav__meta-text">schema v6</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="pagehead">
+    <div class="pagehead__bg" aria-hidden="true"></div>
+    <div class="plate-layer plate-layer--page" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="pagehead__kicker">04 / resilience</div>
+      <h1 class="pagehead__title display">Cut off,<br>is not amnesia</h1>
+      <p class="pagehead__lede">
+        One full day without reaching the hub, and the local node keeps distilling on the staged data, in small batches. Five days without recovery, and it acts as its own hub. When the hub comes back, the two sides merge in a fixed order: push → send back → confirm → pull snapshot, with no step skipped. Only when the last step succeeds and the local copy is still there does the staging get deleted.
+      </p>
+      <div class="pagehead__meta">
+        <span class="chip chip--rust">One day down / five days down</span>
+        <span class="chip">pending.db</span>
+        <span class="chip">dr/ hourly self-backup</span>
+        <span class="chip chip--sage">Never delete unconfirmed</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 模拟器 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">01</div>
+        <div>
+          <h2 class="sec-title">Try pulling the cable</h2>
+          <p class="sec-lede">
+            Cut the hub off, then advance time. State names, staging row counts and self-backup counts follow the real state machine; the numbers are illustrative and are not live readings.
+          </p>
+        </div>
+      </div>
+
+      <div class="sim" data-sim data-reveal>
+        <div class="sim__left">
+          <div class="topo">
+            <div class="topo__box" data-node-box>
+              <b>edge</b>
+              <span>recollect-node</span>
+            </div>
+            <div class="topo__link">
+              <span class="topo__state">Hub unreachable</span>
+            </div>
+            <div class="topo__box" data-hub-box>
+              <b>primary</b>
+              <span>hub</span>
+            </div>
+          </div>
+
+          <div class="clock">
+            <span class="clock__v" data-clock>0</span>
+            <span class="clock__u">hours unreachable</span>
+            <span class="clock__s" data-state>In sync</span>
+          </div>
+
+          <div class="track">
+            <div class="track__rail"></div>
+            <div class="track__fill" data-fill></div>
+            <div class="track__mark" style="left:0"></div>
+            <div class="track__lbl" style="left:0">0h</div>
+            <div class="track__mark" data-mark24 style="left:20%"></div>
+            <div class="track__lbl" data-lbl24 style="left:20%">24h · one day down</div>
+            <div class="track__mark" data-mark120 style="left:100%"></div>
+            <div class="track__lbl" data-lbl120 style="left:88%">120h · five days down</div>
+            <div class="track__head" data-head></div>
+          </div>
+
+          <div class="simbtns">
+            <button class="ctl ctl--danger ctl--cue" data-act="cut">Cut the hub connection</button>
+            <button class="ctl" data-act="12" disabled>Advance 12h</button>
+            <button class="ctl" data-act="24" disabled>Jump to 24h</button>
+            <button class="ctl" data-act="120" disabled>Jump to 120h</button>
+            <button class="ctl ctl--ok" data-act="rejoin" disabled>Restore connection</button>
+            <button class="ctl" data-act="reset">Reset</button>
+          </div>
+          <p class="simhint" data-simhint aria-live="polite">Step one: cut the hub connection first</p>
+        </div>
+
+        <div class="readout">
+          <div class="readout__head">
+            <span class="readout__title">node status</span>
+            <span class="chip" data-badge>In sync</span>
+          </div>
+          <div class="readout__row"><span class="readout__k">self_distill</span><span class="readout__v" data-r-self>false</span></div>
+          <div class="readout__row"><span class="readout__k">pending_turns</span><span class="readout__v" data-r-pending>0</span></div>
+          <div class="readout__row"><span class="readout__k">staging_rows</span><span class="readout__v" data-r-staging>0</span></div>
+          <div class="readout__row"><span class="readout__k">dr_backup_count</span><span class="readout__v" data-r-dr>0</span></div>
+          <div class="readout__row"><span class="readout__k">replica/</span><span class="readout__v is-ok" data-r-replica>read-only · bytes untouched</span></div>
+          <div class="readout__row"><span class="readout__k">auto_unlock</span><span class="readout__v is-brass" data-r-unlock>true</span></div>
+        </div>
+      </div>
+
+      <div class="states" data-reveal style="margin-top:34px">
+        <div class="st" data-st="connected">
+          <div class="st__n">00</div>
+          <div class="st__t">In sync <em>connected</em></div>
+          <div class="st__d">In sync; failed syncs do not enter staging.</div>
+        </div>
+        <div class="st" data-st="offline">
+          <div class="st__n">01 · 24h</div>
+          <div class="st__t">Distilling locally <em>offline_distilling</em></div>
+          <div class="st__d">Distils in small batches on the local staging area; the read-only copy is not touched byte for byte.</div>
+        </div>
+        <div class="st" data-st="detached_distilling">
+          <div class="st__n">02 · 120h</div>
+          <div class="st__t">Detached, still distilling <em>detached_distilling</em></div>
+          <div class="st__d">The next state comes only after a self-backup succeeds; unconfirmed backups are never deleted.</div>
+        </div>
+        <div class="st" data-st="detached_promoted">
+          <div class="st__n">03</div>
+          <div class="st__t">Acting as hub <em>detached_promoted</em></div>
+          <div class="st__d">Acts as its own hub; old backups may only be cleaned up after the merge back is confirmed.</div>
+        </div>
+        <div class="st" data-st="rejoined">
+          <div class="st__n">04</div>
+          <div class="st__t">Rejoined <em>rejoined</em></div>
+          <div class="st__d">Staging may only be deleted after all four steps finish.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 并回的固定顺序 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">02</div>
+        <div>
+          <h2 class="sec-title">Merging back has one order only</h2>
+          <p class="sec-lede">
+            Push rows written locally (push), then send back the rows accumulated while offline (rows), and pull a new snapshot (pull) only after the hub confirms. If a step fails, the next one does not run and the local copy is not deleted; the next round sends the same batch again, the hub recognises it and does not write duplicates. Session reads work the same way: when the hub is unreachable, fall back to the local copy and mark the receipt <span class="code">source=local</span> + <span class="code">degraded</span>, never passing local results off as the hub's.
+          </p>
+        </div>
+      </div>
+
+      <div class="order" data-order data-reveal>
+        <div class="order__step" data-ord="0">
+          <div class="order__n">step 01</div>
+          <div class="order__t">push</div>
+          <div class="order__d">Push what was written locally to the hub; stop on failure.</div>
+        </div>
+        <div class="order__step" data-ord="1">
+          <div class="order__n">step 02</div>
+          <div class="order__t">rows</div>
+          <div class="order__d">Send back the rows accumulated offline; the next step runs only after the hub answers 200.</div>
+        </div>
+        <div class="order__step" data-ord="2">
+          <div class="order__n">step 03</div>
+          <div class="order__t">Confirm</div>
+          <div class="order__d">The same batch sent twice counts once; nothing is written twice.</div>
+        </div>
+        <div class="order__step" data-ord="3">
+          <div class="order__n">step 04</div>
+          <div class="order__t">pull</div>
+          <div class="order__d">Pull the new snapshot; staging is deleted only if that succeeds and the local copy is still there.</div>
+        </div>
+      </div>
+
+      <div class="mathrow" data-reveal style="margin-top:30px">
+        <div>
+          <b>401 / 403 / 409</b>
+          <span>Not the same as being offline. 401/403 means no permission or a rejection, 409 means the two versions disagree; treating them as offline triggers local distillation by mistake.</span>
+        </div>
+        <div>
+          <b>1 day / 5 days</b>
+          <span>Both gates count consecutive unreachability, not the number of failed attempts.</span>
+        </div>
+        <div>
+          <b>0 bytes</b>
+          <span>While offline the read-only copy stays untouched; local distillation writes only to pending.db and dr/.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 备份 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">03</div>
+        <div>
+          <h2 class="sec-title">A backup does one thing: catch up</h2>
+          <p class="sec-lede">
+            A backup catches up entry by entry along the replication sequence. Behind, it catches up; missing entries, it reports "unavailable + gap" rather than passing off stale content. Only after catching up and passing verification may it take over.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel" data-reveal>
+        <div class="panel__head"><span class="panel__title">hub backup · how to read the numbers</span><span class="chip chip--brass">Three parts</span></div>
+        <div class="panel__body">
+          <table class="spec">
+            <thead><tr><th>Item</th><th>Value</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="code">hub backup</span></td><td>raw transcript · memory · manifest</td><td>All three written together, keeping the last 7 sets; the manifest carries version and progress</td></tr>
+              <tr><td><span class="code">hub restore</span></td><td>Three steps</td><td>Without <span class="code">--confirm</span> checks only; on restore, extraction progress is rolled back to the position in the manifest</td></tr>
+              <tr><td><span class="code">dr/</span></td><td>Hourly</td><td>Starts only after detaching from the hub (five days down); current copy + staging + raw transcript + state</td></tr>
+              <tr><td>Unconfirmed self-backup</td><td class="num">Never deleted</td><td>Cleaned up only after merging back into the original hub and confirming</td></tr>
+              <tr><td>Private key in backups</td><td>No plaintext</td><td><span class="code">hub key export</span> archived encrypted on its own; <span class="code">doctor</span> reports the fingerprint only</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--tight">
+    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <a class="btn btn--ghost" href="pipeline.html">← Extraction pipeline</a>
+      <a class="btn" href="evidence.html">Why trust this system <span class="btn__arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__in">
+      <div>
+        <div class="foot__mark">recollect</div>
+        <p>A general long-term memory service for agents. Raw records are the source of truth; memory is the index.</p>
+      </div>
+      <div>
+        <div class="foot__col-title">Pages</div>
+        <div class="foot__links">
+          <a href="companion.html">Companion</a>
+          <a href="engineering.html">Engineering</a>
+          <a href="architecture.html">Architecture and identity</a>
+          <a href="memory.html">Memory model</a>
+          <a href="pipeline.html">Extraction pipeline</a>
+          <a href="reliability.html">Reliability</a>
+          <a href="evidence.html">Evidence</a>
+          <a href="solo.html">Single device</a>
+        </div>
+      </div>
+      <div class="foot__note">
+        Page content is drawn from the design documents and implementation. Dynamic numbers illustrate how state changes; they are not live readings.
+        <div class="foot__repo">
+          <a href="https://github.com/lingxinsuixing/recollect" target="_blank" rel="noopener">GitHub · lingxinsuixing/recollect <span aria-hidden="true">↗</span></a>
+          <span>Author / maintainer: lingxinsuixing</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot__bottom">
+      <span>recollect · schema v6 · 2026</span>
+      <span>designed for agents, readable by humans</span>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/en/site.js"></script>
+<script src="../assets/en/reliability.js"></script>
+</body>
+</html>

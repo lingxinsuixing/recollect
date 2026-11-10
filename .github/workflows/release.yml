@@ -1,0 +1,152 @@
+name: release
+
+# 打 tag（vX.Y.Z）即出两平台产物：Windows x64（zip + setup.exe）与 Linux x64
+# （tar.gz + deb + rpm，musl 静态）。发布资产、SHA256SUMS 与 manifest.json 一并挂到 Release。
+#
+# 说明：安装器**不自动改任何宿主的 MCP 配置**（用户 2026-11-09 裁定）；
+# 便携包是给 agent 的路径：解压、校验、绝对路径调用。
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  RECOLLECT_MAINTAINER: recollect contributors
+  RECOLLECT_LICENSE: MIT
+  NFPM_VERSION: "2.48.0"
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          set -euo pipefail
+          want="${GITHUB_REF_NAME#v}"
+          got="$(awk '/^\[workspace\.package\]/{f=1;next} f&&/^version[[:space:]]*=/{gsub(/[" ]/,"",$3);print $3;exit}' Cargo.toml)"
+          if [ "$want" != "$got" ]; then
+            echo "tag $GITHUB_REF_NAME does not match workspace version $got" >&2
+            exit 1
+          fi
+          echo "version=$got" >> "$GITHUB_OUTPUT"
+
+  windows:
+    needs: guard
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: build (path-scrubbed)
+        shell: bash
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=${USERPROFILE}=/build --remap-path-prefix=$(cygpath -w "$PWD")=/src"
+          cargo build --release -p hub -p node -p mcp -p hook -p doctor -p rc-core
+      - name: stage windows
+        shell: bash
+        run: |
+          mkdir -p dist/windows-x86_64
+          for b in hub node mcp hook doctor core; do
+            cp "target/release/recollect-$b.exe" dist/windows-x86_64/
+          done
+      - name: portable zip + manifest
+        shell: bash
+        run: bash scripts/package-portable.sh
+      - run: choco install innosetup -y --no-progress
+      - name: setup.exe
+        shell: bash
+        run: bash scripts/package-native.sh --windows
+      - name: flatten assets
+        shell: bash
+        run: |
+          mkdir -p dist/assets
+          cp dist/release/*.zip dist/*setup*.exe dist/assets/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/assets/*
+
+  linux:
+    needs: guard
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - run: sudo apt-get update -qq && sudo apt-get install -y musl-tools
+      - name: build (musl static, path-scrubbed)
+        run: |
+          export CC_x86_64_unknown_linux_musl=musl-gcc
+          export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc
+          export RUSTFLAGS="--remap-path-prefix=$HOME=/build --remap-path-prefix=$PWD=/src"
+          cargo build --release --target x86_64-unknown-linux-musl \
+            -p hub -p node -p mcp -p hook -p doctor -p rc-core
+      - name: stage linux
+        run: |
+          mkdir -p dist/linux-x86_64
+          for b in hub node mcp hook doctor core; do
+            cp "target/x86_64-unknown-linux-musl/release/recollect-$b" dist/linux-x86_64/
+          done
+      - name: nfpm
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -sL -o /tmp/nfpm.tgz \
+            "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz"
+          tar -xzf /tmp/nfpm.tgz -C /tmp nfpm
+          install -m755 /tmp/nfpm "$HOME/.local/bin/nfpm"
+      - name: portable tar.gz + deb/rpm
+        run: |
+          bash scripts/package-portable.sh
+          NFPM="$HOME/.local/bin/nfpm" bash scripts/package-native.sh --linux
+      - name: flatten assets
+        run: |
+          mkdir -p dist/assets
+          cp dist/release/*.tar.gz dist/*.deb dist/*.rpm dist/assets/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/assets/*
+
+  publish:
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/assets
+          merge-multiple: true
+      - name: checksums + manifest
+        run: |
+          set -euo pipefail
+          cd dist/assets
+          find . -maxdepth 1 -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.deb' -o -name '*.rpm' -o -name '*.exe' \) -printf '%f\n' | sort > /tmp/assets.txt
+          xargs -a /tmp/assets.txt sha256sum > SHA256SUMS
+          python3 - "$GITHUB_REF_NAME" <<'PY'
+          import hashlib, json, os, sys
+          ver = sys.argv[1].lstrip('v')
+          assets = [l.strip() for l in open('/tmp/assets.txt') if l.strip()]
+          files = []
+          for name in assets:
+              h = hashlib.sha256(open(name, 'rb').read()).hexdigest()
+              files.append({"file": name, "sha256": h})
+          json.dump({"version": ver, "format_version": 1, "files": files},
+                    open('manifest.json', 'w'), indent=2)
+          PY
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/assets/*.zip
+            dist/assets/*.tar.gz
+            dist/assets/*.deb
+            dist/assets/*.rpm
+            dist/assets/*.exe
+            dist/assets/SHA256SUMS
+            dist/assets/manifest.json
+          generate_release_notes: true

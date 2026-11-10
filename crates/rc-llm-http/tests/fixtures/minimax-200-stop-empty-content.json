@@ -1,0 +1,14 @@
+{
+  "id": "3333333333333333333333333333333f",
+  "choices": [ { "finish_reason": "stop", "index": 0, "message": { "content": "", "role": "assistant", "name": "assistant", "audio_content": "" } } ],
+  "created": 1792000000,
+  "model": "MiniMax-M3.1-Flash-Preview",
+  "object": "chat.completion",
+  "usage": { "total_tokens": 3, "total_characters": 0, "prompt_tokens": 700, "completion_tokens": 3 },
+  "input_sensitive": false,
+  "output_sensitive": true,
+  "input_sensitive_type": 0,
+  "output_sensitive_type": 0,
+  "output_sensitive_int": 0,
+  "base_resp": { "status_code": 0, "status_msg": "" }
+}

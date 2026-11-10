@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>记忆模型 — recollect</title>
+<link rel="canonical" href="https://lingxinsuixing.github.io/recollect/memory.html">
+<meta name="description" content="两半记忆：agent 自己的加密小本，和可查可追溯的世界记忆；实体锚定与召回演示。">
+<meta name="theme-color" content="#0a0805">
+<meta property="og:type" content="website">
+<meta property="og:title" content="记忆模型 — recollect">
+<meta property="og:description" content="两半记忆：agent 自己的加密小本，和可查可追溯的世界记忆。">
+<meta property="og:image" content="https://lingxinsuixing.github.io/recollect/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<script>(function(){var m=location.search.match(/[?&]theme=([a-z-]+)/),t=m?m[1]:"gold";document.documentElement.dataset.theme=(t==="default"||t==="cold")?"":t;})();</script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060607'/%3E%3Crect x='10' y='10' width='12' height='12' transform='rotate(45 16 16)' fill='none' stroke='%23c8a468' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/theme-gold.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  .halves { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .half { padding: clamp(22px, 3vw, 36px); background: var(--ink-0); position: relative; display: flex; flex-direction: column; }
+  .half--self { background: linear-gradient(180deg, rgba(200,164,104,.07), rgba(200,164,104,.012)); }
+  .half__k { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+  .half h3 { margin-top: 14px; font-family: var(--font-display); font-weight: 300; font-size: clamp(24px, 2.4vw, 32px); }
+  .half p { margin-top: 14px; font-size: 13.5px; line-height: 1.9; color: var(--body-dim); max-width: 44ch; }
+  .half__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+  .half__note { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line-2); font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: var(--muted); }
+
+  .subhead { margin: clamp(40px, 5vw, 64px) 0 0; padding-top: 24px; border-top: 2px solid var(--line-3); display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .subhead__k { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
+  .subhead__d { font-size: 14px; line-height: 1.85; color: var(--body-dim); max-width: 60ch; }
+
+  .layers { display: flex; flex-direction: column; border-top: 1px solid var(--line); margin-top: 26px; }
+  .layer {
+    display: grid; grid-template-columns: 52px 150px minmax(0, 1fr) 190px;
+    gap: clamp(12px, 2vw, 28px); align-items: start; text-align: left; width: 100%;
+    padding: 26px 0; border-bottom: 1px solid var(--line-2);
+    transition: background .5s, padding-left .5s var(--ease-out);
+  }
+  .layer:hover { background: rgba(241, 237, 229, 0.016); padding-left: 8px; }
+  .layer.is-open { background: rgba(200, 164, 104, 0.035); padding-left: 8px; }
+  .layer__n { font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; color: var(--brass); padding-top: 6px; }
+  .layer__name { font-family: var(--font-display); font-weight: 300; font-size: clamp(20px, 2vw, 27px); padding-top: 2px; }
+  .layer__desc { color: var(--body-dim); font-size: 13.5px; line-height: 1.8; }
+  .layer__tag { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: right; padding-top: 6px; }
+  .layer__body {
+    grid-column: 2 / -1; overflow: hidden; max-height: 0; opacity: 0;
+    transition: max-height .6s var(--ease-out), opacity .5s;
+  }
+  .layer.is-open .layer__body { max-height: 240px; opacity: 1; }
+  .layer__body .layer__body-p { display: block; margin-top: 14px; font-size: 13px; color: var(--muted); line-height: 1.85; }
+  .layer__body .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+  .entgrid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: start; }
+  .graphbox { border: 1px solid var(--line); background: rgba(8,8,10,.5); position: relative; }
+  .graphbox svg { width: 100%; height: auto; }
+  .entpick { display: none; }
+  .g-edge { stroke: rgba(241,237,229,.14); stroke-width: 1; fill: none; transition: stroke .35s, stroke-width .35s, opacity .35s; }
+  .g-edge.is-hot { stroke: rgba(200,164,104,.65); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 3 7; animation: edgeFlow 1.1s linear infinite; }
+  .g-edge.is-dim { stroke: rgba(241,237,229,.05); }
+  @keyframes edgeFlow { to { stroke-dashoffset: -20; } }
+  .g-label { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .1em; fill: rgba(241,237,229,.30); transition: fill .35s, opacity .35s; }
+  .g-label.is-dim { opacity: .22; }
+  .g-label.is-hot { fill: rgba(233,212,166,.9); }
+  .g-node circle { transition: fill .35s, r .35s, opacity .35s, stroke-width .35s; }
+  .g-node.is-hot circle:not(.hit) { stroke-width: 1.8; }
+  .g-node .hit { fill: transparent; cursor: pointer; }
+  .g-node.is-dim { opacity: .28; }
+  .g-node text { font-family: var(--font-body); font-size: 11.5px; fill: rgba(241,237,229,.84); pointer-events: none; }
+  .g-node.is-hot text { fill: #fff; }
+  .g-anchor text { font-family: var(--font-display); font-size: 15px; fill: var(--brass-2); }
+
+  .entpanel { border: 1px solid var(--line); background: rgba(10,10,12,.6); padding: 20px; min-height: 240px; }
+  .entpanel__k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+  .entpanel__t { margin-top: 10px; font-family: var(--font-display); font-weight: 300; font-size: 24px; }
+  .entpanel__d { margin-top: 10px; font-size: 13px; line-height: 1.85; color: var(--body-dim); }
+  .entpanel__rows { margin-top: 18px; border-top: 1px solid var(--line-2); }
+  .entpanel__row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-2); font-size: 12px; }
+  .entpanel__row span:first-child { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: var(--muted-2); }
+  .entpanel__row span:last-child { color: var(--bone-2); text-align: right; }
+
+  .askgroup { margin-bottom: clamp(34px, 4vw, 52px); }
+  .askgroup__h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .askgroup__h span { font-family: var(--font-display); font-weight: 300; font-size: clamp(20px, 2vw, 26px); }
+  .askgroup__h small { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--muted-2); }
+  .askgroup .ask { border-top: 0; }
+  .ask { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+  .ask__item { padding: clamp(20px, 2.4vw, 30px) clamp(16px, 2vw, 26px); border-bottom: 1px solid var(--line-2); border-right: 1px solid var(--line-2); transition: background .4s; }
+  .ask__item:nth-child(2n) { border-right: 0; }
+  .ask__item:hover { background: rgba(200, 164, 104, 0.03); }
+  .ask__verb {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; margin-bottom: 12px;
+    border: 1px solid rgba(200, 164, 104, 0.45); color: var(--brass-2);
+    font-size: 12px; line-height: 1;
+  }
+  .ask__q { font-family: var(--font-display); font-weight: 300; font-size: clamp(19px, 1.9vw, 24px); line-height: 1.45; color: var(--bone); }
+  .ask__a { margin-top: 10px; font-size: 13px; line-height: 1.8; color: var(--body-dim); }
+  .ask__meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .ask__meta .code { font-size: 11px; color: var(--brass-2); border: 1px solid rgba(200,164,104,.28); padding: 2px 7px; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--line); }
+  .tab {
+    padding: 12px 18px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted); border-bottom: 1px solid transparent; margin-bottom: -1px;
+    transition: color .3s, border-color .3s;
+  }
+  .tab:hover { color: var(--bone-2); }
+  .tab[aria-selected="true"] { color: var(--brass); border-bottom-color: var(--brass); }
+
+  [role="tabpanel"] { padding: clamp(20px, 3vw, 32px); }
+  [role="tabpanel"].is-entering { animation: panelIn .55s var(--ease-out); }
+  @keyframes panelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .query { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--line); margin-bottom: 24px; }
+  .query__k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); }
+  .query__v { font-size: 14px; color: var(--bone); }
+  .cursor { display: inline-block; width: 6px; height: 15px; background: var(--brass); vertical-align: -2px; animation: blink 1.2s steps(1) infinite; margin-left: 2px; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .briefline { padding: 10px 0; border-bottom: 1px solid var(--line-2); font-size: 14px; line-height: 1.9; color: var(--bone-2); }
+  .briefline:last-child { border-bottom: 0; }
+  .hnd {
+    font-family: var(--font-mono); font-size: 11px; color: var(--brass); border: 1px solid rgba(200,164,104,.3);
+    padding: 0 5px; margin-right: 8px; vertical-align: 1px; transition: all .3s;
+  }
+  .hnd:hover { background: var(--brass); color: #12100c; }
+  .hnd.is-open { background: rgba(200,164,104,.16); }
+  .rawline {
+    overflow: hidden; max-height: 0; opacity: 0;
+    transition: max-height .55s var(--ease-out), opacity .4s;
+  }
+  .rawline.is-open { max-height: 200px; opacity: 1; }
+  .rawline__in { margin: 12px 0 16px 0; padding: 14px 16px; border-left: 1px solid rgba(200,164,104,.5); background: rgba(200,164,104,.04); }
+  .rawline__meta { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); margin-bottom: 8px; }
+  .rawline__q { font-size: 13.5px; line-height: 1.9; color: var(--bone-2); }
+  .rawline__q mark { background: rgba(200,164,104,.18); color: var(--brass-2); padding: 0 2px; }
+
+  .cardview { border: 1px solid var(--line); }
+  .cardview__row { display: grid; grid-template-columns: 92px 1fr; gap: 14px; padding: 11px 16px; border-bottom: 1px solid var(--line-2); font-size: 13px; }
+  .cardview__row:last-child { border-bottom: 0; }
+  .cardview__k { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); padding-top: 2px; }
+  .cardview__v { color: var(--bone-2); line-height: 1.7; }
+  .cardview__v code { font-family: var(--font-mono); font-size: 12px; color: var(--brass-2); }
+
+  .jsonview { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.9; color: var(--muted); white-space: pre; overflow-x: auto; }
+  .jsonview .key { color: var(--slate); }
+  .jsonview .str { color: var(--brass-2); }
+  .jsonview .num { color: var(--sage); }
+  .jsonview .punc { color: var(--muted-2); }
+
+  .chain { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+  .chain__node { padding: 7px 12px; border: 1px solid var(--line); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; color: var(--bone-2); }
+  .chain__node--on { border-color: rgba(200,164,104,.5); color: var(--brass-2); background: rgba(200,164,104,.07); }
+  .chain__arrow { color: var(--muted-2); font-size: 11px; }
+
+  .schemagrid { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); }
+  .schemacol { padding: 22px 16px 24px 0; border-right: 1px solid var(--line-2); }
+  .schemacol:last-child { border-right: 0; }
+  .schemacol__h { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--brass); margin-bottom: 14px; }
+  .schemacol__h small { display: block; color: var(--muted-2); letter-spacing: .06em; margin-top: 4px; text-transform: none; font-size: 9px; }
+  .schemacol ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+  .schemacol li { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+  @media (max-width: 1000px) {
+    .halves { grid-template-columns: 1fr; }
+    .layer { grid-template-columns: 40px 120px 1fr; }
+    .layer__tag { grid-column: 2 / -1; text-align: left; padding-top: 0; }
+    .layer__body { grid-column: 2 / -1; }
+    .entgrid { grid-template-columns: 1fr; }
+    .schemagrid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .ask { grid-template-columns: 1fr; }
+    .ask__item { border-right: 0; }
+    .layer { grid-template-columns: 32px 1fr; }
+    .layer__desc { grid-column: 2 / -1; }
+    .layer__tag { grid-column: 2 / -1; }
+    .layer__body { grid-column: 2 / -1; }
+    .entpick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+    .entpick button {
+      min-height: 38px; padding: 8px 10px; border: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em;
+      color: var(--muted); text-align: left; transition: color .3s, border-color .3s, background .3s;
+    }
+    .entpick button.is-on { color: var(--brass); border-color: rgba(200,164,104,.5); background: rgba(200,164,104,.07); }
+    .cardview__row { grid-template-columns: 1fr; gap: 4px; }
+    .schemagrid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" data-progress></div>
+<div class="plate-layer plate-layer--ambient" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__brand" href="index.html" aria-label="recollect 首页">
+    <span class="nav__mark" aria-hidden="true"></span>
+    <span class="nav__word">recollect</span>
+    <span class="nav__sub">agent-native memory</span>
+  </a>
+  <nav class="nav__links" aria-label="主导航">
+    <a href="index.html" data-nav-link>总览</a>
+    <a href="companion.html" data-nav-link>陪伴</a>
+    <a href="engineering.html" data-nav-link>工程</a>
+    <a href="architecture.html" data-nav-link>架构</a>
+    <a href="memory.html" data-nav-link>记忆模型</a>
+    <a href="pipeline.html" data-nav-link>抽取</a>
+    <a href="reliability.html" data-nav-link>韧性</a>
+    <a href="evidence.html" data-nav-link>证据</a>
+    <a href="solo.html" data-nav-link>单机</a>
+  </nav>
+  <div class="nav__meta">
+    <a class="nav__lang" href="en/memory.html" aria-label="Switch to English" hreflang="en">EN</a>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="nav__meta-text">schema v6</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="pagehead">
+    <div class="pagehead__bg" aria-hidden="true"></div>
+    <div class="plate-layer plate-layer--page" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="pagehead__kicker">02 / memory model</div>
+      <h1 class="pagehead__title display">记忆是索引，<br>不是抄本</h1>
+      <p class="pagehead__lede">
+        一条记忆只回答「结论是什么、关于谁、什么时候、出处在哪」。
+        原文不进记忆，留在原始对话表里；按编号用 <span class="code">recollect_turn</span> 取回那一轮，前后各可带 10 轮。这样模型可以随时换、提示词可以随时改，
+        而原始会话一个字节都不会丢。
+      </p>
+      <div class="pagehead__meta">
+        <span class="chip chip--brass">两半记忆</span>
+        <span class="chip">实体锚定</span>
+        <span class="chip">25 张正式记忆表</span>
+        <span class="chip">41 个工具</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 两半记忆 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">01</div>
+        <div>
+          <h2 class="sec-title">两半记忆：自己的，和世界的</h2>
+          <p class="sec-lede">
+            记忆不是一件事。一半是 agent 自己的加密小本，只有它自己看得见、写得了；
+            另一半是它和你一起经历的世界，可查、可追溯，也能被同一个人名下的其他 agent 读到。
+            世界记忆放在多台设备、多个 agent 之间共用：大家一起抽、一起查；core 只认单一 agent 的钥匙。
+          </p>
+        </div>
+      </div>
+
+      <div class="halves" data-reveal>
+        <article class="half half--self">
+          <div class="half__k">self · 加密小本</div>
+          <h3>core</h3>
+          <p>
+            每个 agent 一份，加密存放。人格、对主人的理解、情绪、没做完的事、随手的笔记——
+            都是它自己的立场，由它自己写，不经过自动抽取，也不共享给别人。
+          </p>
+          <div class="half__chips">
+            <span class="chip chip--brass">人格</span>
+            <span class="chip chip--brass">对主人的理解</span>
+            <span class="chip chip--brass">情绪</span>
+            <span class="chip chip--brass">没做完的事</span>
+            <span class="chip chip--brass">交接条</span>
+            <span class="chip chip--brass">小本本</span>
+          </div>
+          <div class="half__note">它属于 agent，是它的底座；只认这一个 agent 的钥匙。</div>
+        </article>
+
+        <article class="half">
+          <div class="half__k">world · 世界记忆</div>
+          <h3>memory.db + transcript</h3>
+          <p>
+            你们一起经历的事：谁在什么时候说了什么、做了什么决定、结果如何。
+            每条都带出处和指针，能按指针取回原话，也能被撤销、被替换、被同一主人名下的其他 agent 读到。
+          </p>
+          <div class="half__chips">
+            <span class="chip">事实</span>
+            <span class="chip">事件</span>
+            <span class="chip">决定</span>
+            <span class="chip">关系</span>
+            <span class="chip">状态</span>
+            <span class="chip">原话</span>
+          </div>
+          <div class="half__note">它属于这段关系，是一本可核对的账；同一主人名下的 agent 共用。</div>
+        </article>
+      </div>
+
+      <div class="subhead" data-reveal>
+        <div class="subhead__k">同一条记忆，三种进模型的方式</div>
+        <p class="subhead__d">
+          这不是三个库，也不是三层存储——是同一份东西在不同场合被拿出来的三种粒度。
+        </p>
+      </div>
+
+      <div class="layers" data-reveal>
+        <button class="layer" data-layer aria-expanded="false">
+          <span class="layer__n">01</span>
+          <span class="layer__name">常驻</span>
+          <span class="layer__desc">必须每次都在场：身份、偏好、关系、称呼、没做完的事。它住在 core，属于 agent 自己。</span>
+          <span class="layer__tag">每次都在 · 不压缩</span>
+          <span class="layer__body">
+            <span class="layer__body-p">
+              常驻不是「重要的记忆」，是「不能每次重算的那部分」。它由 agent 主动维护，
+              每份用独立密钥加密，只有它自己能读。
+            </span>
+            <span class="row">
+              <span class="chip chip--brass">身份</span>
+              <span class="chip chip--brass">偏好</span>
+              <span class="chip chip--brass">关系</span>
+              <span class="chip chip--brass">称呼</span>
+              <span class="chip chip--brass">没做完的事</span>
+            </span>
+          </span>
+        </button>
+
+        <button class="layer is-open" data-layer aria-expanded="true">
+          <span class="layer__n">02</span>
+          <span class="layer__name">按需</span>
+          <span class="layer__desc">发生了什么、结果、决定、开放任务。一次召回默认只给几行摘要 + 句柄（行首编号）+ 原文位置。</span>
+          <span class="layer__tag">召回时取 · 摘要 + 原文位置</span>
+          <span class="layer__body">
+            <span class="layer__body-p">
+              记忆正文通常只有一到两句话。它指向原文的那一段，而不是复制那一段——
+              所以模型可以随时换、提示词可以随时改，库里的结论不会跟着漂。
+            </span>
+            <span class="row">
+              <span class="chip">事实</span>
+              <span class="chip">事件</span>
+              <span class="chip">决定</span>
+              <span class="chip">开放任务</span>
+              <span class="chip">状态</span>
+            </span>
+          </span>
+        </button>
+
+        <button class="layer" data-layer aria-expanded="false">
+          <span class="layer__n">03</span>
+          <span class="layer__name">展开</span>
+          <span class="layer__desc">完整对话、工具输出、代码、日志、文档。按 turn_uid 或会话回放取片段，平时不进模型。</span>
+          <span class="layer__tag">按句柄展开</span>
+          <span class="layer__body">
+            <span class="layer__body-p">
+              原文永远保留，只增不改。工具输出由程序抽骨架（状态 / 路径 / 错误码 / 计数），
+              模型只判断含义；记忆存结论 + 指向原文的编号，完整内容留在这里。
+            </span>
+            <span class="row">
+              <span class="chip">对话原文</span>
+              <span class="chip">工具结果</span>
+              <span class="chip">文档</span>
+              <span class="chip">段落位置</span>
+              <span class="chip">版本</span>
+            </span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 实体锚定 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">02</div>
+        <div>
+          <h2 class="sec-title">记忆挂在锚点上</h2>
+          <p class="sec-lede">
+            记忆不是一段段自由文本，而是分开的条目：这条是称呼，那条是状态，另一条是事件，
+            各自挂在一个固定身份上——这个身份就叫锚。点一下或悬停任意节点，看它连着什么。下面的图为示意，仅作示范。
+          </p>
+        </div>
+      </div>
+
+      <div class="entgrid" data-reveal>
+        <div class="graphbox">
+          <svg viewBox="0 0 720 480" role="img" aria-label="实体锚定示意图：锚点「阿岚」连接称呼、提及、属性、状态、关系与事件">
+            <defs>
+              <radialGradient id="anchorGlow">
+                <stop offset="0%" stop-color="rgba(200,164,104,.22)"/>
+                <stop offset="100%" stop-color="rgba(200,164,104,0)"/>
+              </radialGradient>
+            </defs>
+            <circle cx="360" cy="240" r="90" fill="url(#anchorGlow)"/>
+
+            <g class="g-edges">
+              <path class="g-edge" data-edge="alias" d="M356 222 C300 190 240 160 186 136"/>
+              <path class="g-edge" data-edge="mention" d="M344 240 L186 240"/>
+              <path class="g-edge" data-edge="mention2" d="M356 258 C300 290 240 320 186 344"/>
+              <path class="g-edge" data-edge="attribute" d="M378 228 C430 200 490 172 536 154"/>
+              <path class="g-edge" data-edge="state" d="M380 250 C440 252 500 252 566 252"/>
+              <path class="g-edge" data-edge="relation" d="M378 262 C430 290 490 318 534 336"/>
+              <path class="g-edge" data-edge="episode" d="M360 222 L360 138"/>
+            </g>
+
+            <g class="g-labels">
+              <text class="g-label" x="238" y="170">别名</text>
+              <text class="g-label" x="248" y="232">提及</text>
+              <text class="g-label" x="248" y="308">提及</text>
+              <text class="g-label" x="436" y="186">属性</text>
+              <text class="g-label" x="452" y="244">状态</text>
+              <text class="g-label" x="436" y="308">关系</text>
+              <text class="g-label" x="368" y="178">事件</text>
+            </g>
+
+            <g class="g-node g-anchor" data-ent="anchor" tabindex="0" role="button" aria-label="锚点 阿岚">
+              <circle class="hit" cx="360" cy="240" r="30"/>
+              <circle cx="360" cy="240" r="20" fill="rgba(6,6,7,.9)" stroke="rgba(200,164,104,.75)"/>
+              <circle cx="360" cy="240" r="4" fill="#c8a468"/>
+              <text x="360" y="288" text-anchor="middle">阿岚</text>
+            </g>
+
+            <g class="g-node" data-ent="alias" tabindex="0" role="button" aria-label="称呼 若若">
+              <circle class="hit" cx="170" cy="130" r="22"/>
+              <circle cx="170" cy="130" r="8" fill="rgba(6,6,7,.9)" stroke="rgba(241,237,229,.4)"/>
+              <text x="170" y="112" text-anchor="middle">称呼「若若」</text>
+            </g>
+
+            <g class="g-node" data-ent="mention1" tabindex="0" role="button" aria-label="提及 她">
+              <circle class="hit" cx="176" cy="240" r="22"/>
+              <circle cx="176" cy="240" r="7" fill="rgba(6,6,7,.9)" stroke="rgba(241,237,229,.4)"/>
+              <text x="176" y="266" text-anchor="middle">「她」</text>
+            </g>
+
+            <g class="g-node" data-ent="mention2" tabindex="0" role="button" aria-label="提及 岚姐">
+              <circle class="hit" cx="176" cy="350" r="22"/>
+              <circle cx="176" cy="350" r="7" fill="rgba(6,6,7,.9)" stroke="rgba(241,237,229,.4)"/>
+              <text x="176" y="376" text-anchor="middle">「岚姐」</text>
+            </g>
+
+            <g class="g-node" data-ent="attribute" tabindex="0" role="button" aria-label="属性 偏好 深夜写代码">
+              <circle class="hit" cx="556" cy="148" r="22"/>
+              <circle cx="556" cy="148" r="8" fill="rgba(6,6,7,.9)" stroke="rgba(138,161,191,.7)"/>
+              <text x="556" y="130" text-anchor="middle">偏好：深夜写代码</text>
+            </g>
+
+            <g class="g-node" data-ent="state" tabindex="0" role="button" aria-label="状态 疲惫">
+              <circle class="hit" cx="586" cy="252" r="22"/>
+              <circle cx="586" cy="252" r="8" fill="rgba(6,6,7,.9)" stroke="rgba(196,99,67,.7)"/>
+              <text x="586" y="278" text-anchor="middle">状态：疲惫 · 10-25</text>
+            </g>
+
+            <g class="g-node" data-ent="relation" tabindex="0" role="button" aria-label="关系 同事">
+              <circle class="hit" cx="550" cy="342" r="22"/>
+              <circle cx="550" cy="342" r="8" fill="rgba(6,6,7,.9)" stroke="rgba(134,163,126,.7)"/>
+              <text x="550" y="368" text-anchor="middle">关系：同事 · 阿K</text>
+            </g>
+
+            <g class="g-node" data-ent="episode" tabindex="0" role="button" aria-label="事件 10-24 部署讨论">
+              <circle class="hit" cx="360" cy="120" r="22"/>
+              <circle cx="360" cy="120" r="8" fill="rgba(6,6,7,.9)" stroke="rgba(200,164,104,.8)"/>
+              <text x="360" y="100" text-anchor="middle">事件：10-24 部署讨论</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="entpick" data-entpick aria-label="选择实体"></div>
+
+        <div class="entpanel" data-entpanel aria-live="polite">
+          <div class="entpanel__k" data-ent-k>anchor</div>
+          <div class="entpanel__t" data-ent-t>阿岚（示例主体）</div>
+          <div class="entpanel__d" data-ent-d>一个实体锚。所有关于她的称呼、属性、状态与事件都挂在这里，换一处措辞不会变成另一个人。</div>
+          <div class="entpanel__rows" data-ent-rows></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 两种 agent ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">03</div>
+        <div>
+          <h2 class="sec-title">两种 agent，各取所需</h2>
+          <p class="sec-lede">
+            工具是同一套，重点不一样：陪伴型多看常驻简报、情绪与画像；
+            工程型多看事件线、交接与原话。两边都会用对方的：陪伴型也会翻世界记忆，工程型也有自己的 core。
+          </p>
+        </div>
+      </div>
+
+      <div class="askgroup" data-reveal>
+        <div class="askgroup__h"><span>陪伴型</span><small>4 个动作 · core 为主，也会翻世界记忆</small></div>
+        <div class="ask">
+        <article class="ask__item">
+          <span class="ask__verb">认</span>
+          <p class="ask__q">「我是谁？我们到哪了？」</p>
+          <p class="ask__a">常驻简报：身份、关系、没做完的事，一次给全。</p>
+          <div class="ask__meta"><span class="code">core_brief</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">感</span>
+          <p class="ask__q">「他现在心情怎么样？」</p>
+          <p class="ask__a">情绪与状态，带时间和有效期，不写死成永久属性。</p>
+          <div class="ask__meta"><span class="code">core_affect_get</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">像</span>
+          <p class="ask__q">「我该怎么称呼他？」</p>
+          <p class="ask__a">用户画像与人格设定，只有这个 agent 自己看得见。</p>
+          <div class="ask__meta"><span class="code">core_subject_get</span><span class="code">core_persona_get</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">记</span>
+          <p class="ask__q">「先记一笔，别丢了。」</p>
+          <p class="ask__a">写进小本本，只增不改；摘要会自动进常驻简报。</p>
+          <div class="ask__meta"><span class="code">core_notebook_append</span></div>
+        </article>
+        </div>
+      </div>
+
+      <div class="askgroup" data-reveal>
+        <div class="askgroup__h"><span>工程型</span><small>7 个动作 · 事件线 + 交接 + 原话</small></div>
+        <div class="ask">
+        <article class="ask__item">
+          <span class="ask__verb">问</span>
+          <p class="ask__q">「上次那个部署脚本放哪了？」</p>
+          <p class="ask__a">一句话简报 + 编号句柄；想看细节再按编号展开。</p>
+          <div class="ask__meta"><span class="code">recollect_recall</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">查</span>
+          <p class="ask__q">「原话到底怎么说的？」</p>
+          <p class="ask__a">直接搜原话，命中里带 turn_uid 和会话号；要原文再用「取」。</p>
+          <div class="ask__meta"><span class="code">recollect_search</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">取</span>
+          <p class="ask__q">「这句原话前后还说了什么？」</p>
+          <p class="ask__a">凭 turn_uid 取目标轮，带同会话前后各 10 轮；跨机也能取。</p>
+          <div class="ask__meta"><span class="code">recollect_turn</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">追</span>
+          <p class="ask__q">「这事我在哪个会话里说的？」</p>
+          <p class="ask__a">列出会话，再按会话取上下文。</p>
+          <div class="ask__meta"><span class="code">recollect_sessions</span><span class="code">recollect_session</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">接</span>
+          <p class="ask__q">「我上次停在哪？」</p>
+          <p class="ask__a">读上一段会话留的交接条，接着往下做。</p>
+          <div class="ask__meta"><span class="code">core_handoff_list</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">评</span>
+          <p class="ask__q">「这条帮上忙了吗？」</p>
+          <p class="ask__a">用后回一句：帮上了 / 没用 / 部分 / 条件不符 / 已失效。</p>
+          <div class="ask__meta"><span class="code">recollect_reuse</span></div>
+        </article>
+        <article class="ask__item">
+          <span class="ask__verb">纠</span>
+          <p class="ask__q">「这条记错了。」</p>
+          <p class="ask__a">打报告，走人工判定；不直接改库，也不让模型自己改。</p>
+          <div class="ask__meta"><span class="code">recollect_report</span></div>
+        </article>
+        </div>
+      </div>
+
+      <p class="dim" style="font-size:12.5px;margin-top:8px">
+        13 个共享记忆工具 + 28 个私有工具（读写 agent 自己的小本）；其余是给运维和调试的，日常用不到。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 04 记什么 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">04</div>
+        <div>
+          <h2 class="sec-title">到底记了些什么</h2>
+          <p class="sec-lede">
+            不是把聊天记录存一份，是拆成六种能直接用的东西；每一种都能追到原话。
+          </p>
+        </div>
+      </div>
+
+      <div class="types" data-reveal>
+        <article class="type">
+          <div class="type__k">01 / fact</div>
+          <div class="type__t">事实</div>
+          <p class="type__d">谁在哪、是什么、多少。能被反复引用，也能被推翻。</p>
+          <p class="type__e">部署脚本是 scripts/build-release.sh</p>
+        </article>
+        <article class="type">
+          <div class="type__k">02 / event</div>
+          <div class="type__t">事件</div>
+          <p class="type__d">什么时候、发生了什么、结果怎么样。带时间，能排成线。</p>
+          <p class="type__e">10 月 24 日改过一次发布流程</p>
+        </article>
+        <article class="type">
+          <div class="type__k">03 / decision</div>
+          <div class="type__t">决定</div>
+          <p class="type__d">定了什么、为什么、后来改没改。旧的那条标成「被取代」，不删。</p>
+          <p class="type__e">先切分支再合，别直接推 main</p>
+        </article>
+        <article class="type">
+          <div class="type__k">04 / state</div>
+          <div class="type__t">状态与情绪</div>
+          <p class="type__d">当时的感受和处境，带有效期；过期自然淡出，不贴永久标签。</p>
+          <p class="type__e">这周想歇两天（截至周五）</p>
+        </article>
+        <article class="type">
+          <div class="type__k">05 / relation</div>
+          <div class="type__t">关系</div>
+          <p class="type__d">谁和谁、什么关系、从什么时候开始。关系变了是加一条，不是改旧的。</p>
+          <p class="type__e">阿岚是同事，10 月 12 日起</p>
+        </article>
+        <article class="type">
+          <div class="type__k">06 / anchor</div>
+          <div class="type__t">实体锚</div>
+          <p class="type__d">人、项目、机器、账号。所有记忆都挂在锚上，换个说法不会变成另一个人。</p>
+          <p class="type__e">「recollect 这个项目」</p>
+        </article>
+      </div>
+
+      <p class="dim" style="font-size:13px;line-height:1.9;max-width:64ch;margin-top:24px" data-reveal>
+        另外一类是 agent 自己写的：人格、用户画像、小本本、交接条。它们放在 core，
+        只有这个 agent 自己看得见；上面这六种则在共享的记忆层里，可按权限被同主人的其他 agent 读到。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 05 召回四视图 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">05</div>
+        <div>
+          <h2 class="sec-title">一次召回的四种读法</h2>
+          <p class="sec-lede">
+            召回先用本地关键词索引捞出候选——词级精确匹配，不调用嵌入模型；再把同一批候选拼成不同的读法：
+            给模型看的是一句带编号的简报，行首的 <span class="code">[1]</span> 就是句柄，拿着它能换回那条记忆；记忆里的 turn 指针再用 <span class="code">recollect_turn</span> 取回原话；
+            给程序看的是 JSON，给核对的人看的是能一路展开到原话的证据链。切换标签看同一份记忆的不同切面。
+          </p>
+        </div>
+      </div>
+
+      <div class="subhead" data-reveal>
+        <div class="subhead__k">默认视图 · brief</div>
+        <p class="subhead__d">召回先把候选拼成一句自然语言，行首带 [n] 句柄；整句有上下文，比一堆碎片和字段更不容易读偏。读的时候不调用模型，模型也不用先解析表结构。</p>
+      </div>
+
+      <div class="demo" data-reveal data-tabs>
+        <div class="demo__bar">
+          <span class="demo__label">recollect_recall</span>
+          <div class="tabs" role="tablist" aria-label="召回视图">
+            <button class="tab" role="tab" id="tab-brief" aria-controls="panel-brief" aria-selected="true">view=brief</button>
+            <button class="tab" role="tab" id="tab-card" aria-controls="panel-card" aria-selected="false">view=card</button>
+            <button class="tab" role="tab" id="tab-json" aria-controls="panel-json" aria-selected="false">view=json</button>
+            <button class="tab" role="tab" id="tab-expand" aria-controls="panel-expand" aria-selected="false">view=expand</button>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="panel-brief" aria-labelledby="tab-brief">
+          <div class="query">
+            <span class="query__k">query</span>
+            <span class="query__v">上次部署脚本放哪了？<span class="cursor" aria-hidden="true"></span></span>
+          </div>
+          <div data-brief>
+            <div class="briefline">你们在 10-22 讨论过部署脚本的位置，结论是统一的 release 入口。</div>
+            <div class="briefline">
+              <button class="hnd" data-raw="r1" aria-expanded="false">[1]</button>结论：<span class="code">scripts/build-release.sh</span> 是 release 与两个平台的统一入口，产物落在 <span class="code">dist/&lt;target&gt;/</span>，各自带 SHA256SUMS。
+            </div>
+            <div class="rawline" id="raw-1">
+              <div class="rawline__in">
+                <div class="rawline__meta">原话 · 2026-10-22 · 说话人：你 · 第 t-7f3a 轮 · 第 128–214 字</div>
+                <div class="rawline__q">「release 与双 target（Windows x86_64 与 <mark>aarch64-unknown-linux-gnu</mark>）的统一入口是 <mark>scripts/build-release.sh</mark>；产物落在 <mark>dist/&lt;target&gt;/</mark>，各自带 SHA256SUMS。」</div>
+              </div>
+            </div>
+            <div class="briefline">
+              <button class="hnd" data-raw="r2" aria-expanded="false">[2]</button>当时记过：aarch64 产物已在树莓派（Debian 13 / glibc 2.41）实机跑过，冷启动与空机器两条路都有读数。
+            </div>
+            <div class="rawline" id="raw-2">
+              <div class="rawline__in">
+                <div class="rawline__meta">原话 · 2026-10-22 · 说话人：你 · 第 t-7f3b 轮 · 第 40–96 字</div>
+                <div class="rawline__q">「aarch64 产物已在树莓派（Debian 13 / glibc 2.41）实机跑过，<mark>冷启动与空机器</mark>两条路的读数见 docs/2026-10-22-cold-start-and-binaries.md。」</div>
+              </div>
+            </div>
+            <div class="briefline">
+              <button class="hnd" data-raw="r3" aria-expanded="false">[3]</button>相关：冷启动读数在 <span class="code">docs/2026-10-22-cold-start-and-binaries.md</span>，属于原始资料，不在记忆正文里。
+            </div>
+            <div class="rawline" id="raw-3">
+              <div class="rawline__in">
+                <div class="rawline__meta">出处 · 文档: 2026-10-22-cold-start-and-binaries.md · text_sha256 已登记</div>
+                <div class="rawline__q">记忆只保留「有这份读数」这个结论与文档位置；展开时才取正文。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="panel-card" aria-labelledby="tab-card" hidden>
+          <div class="cardview">
+            <div class="cardview__row"><span class="cardview__k">kind</span><span class="cardview__v">fact</span></div>
+            <div class="cardview__row"><span class="cardview__k">subject</span><span class="cardview__v">部署脚本</span></div>
+            <div class="cardview__row"><span class="cardview__k">claim</span><span class="cardview__v">build-release.sh 是 release 与两个平台的统一入口，产物落 dist/&lt;target&gt;/ 并带 SHA256SUMS。</span></div>
+            <div class="cardview__row"><span class="cardview__k">as_of</span><span class="cardview__v">2026-10-22</span></div>
+            <div class="cardview__row"><span class="cardview__k">source</span><span class="cardview__v">turn <code>t-7f3a</code> · span <code>128–214</code></span></div>
+            <div class="cardview__row"><span class="cardview__k">pointer</span><span class="cardview__v"><code>[e12]</code> → transcript.db</span></div>
+            <div class="cardview__row"><span class="cardview__k">confidence</span><span class="cardview__v">不展示模型自报的数字；可不可信看程序检查和出处，不看模型自己说几分。</span></div>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="panel-json" aria-labelledby="tab-json" hidden>
+          <div class="jsonview"><span class="punc">{</span>
+  <span class="key">"view"</span><span class="punc">:</span> <span class="str">"card"</span><span class="punc">,</span>
+  <span class="key">"items"</span><span class="punc">: [</span>
+    <span class="punc">{</span>
+      <span class="key">"handle"</span><span class="punc">:</span> <span class="str">"[1]"</span><span class="punc">,</span>
+      <span class="key">"kind"</span><span class="punc">:</span> <span class="str">"fact"</span><span class="punc">,</span>
+      <span class="key">"subject"</span><span class="punc">:</span> <span class="str">"部署脚本"</span><span class="punc">,</span>
+      <span class="key">"claim"</span><span class="punc">:</span> <span class="str">"build-release.sh 是 release 与两个平台的统一入口"</span><span class="punc">,</span>
+      <span class="key">"as_of"</span><span class="punc">:</span> <span class="str">"2026-10-22"</span><span class="punc">,</span>
+      <span class="key">"source"</span><span class="punc">: {</span>
+        <span class="key">"turn_uid"</span><span class="punc">:</span> <span class="str">"t-7f3a"</span><span class="punc">,</span>
+        <span class="key">"span"</span><span class="punc">: [</span><span class="num">128</span><span class="punc">,</span> <span class="num">214</span><span class="punc">],</span>
+        <span class="key">"text_sha256"</span><span class="punc">:</span> <span class="str">"9c1f…"</span>
+      <span class="punc">},</span>
+      <span class="key">"pointer"</span><span class="punc">:</span> <span class="str">"[e12]"</span>
+    <span class="punc">}</span>
+  <span class="punc">]</span>
+<span class="punc">}</span></div>
+        </div>
+
+        <div role="tabpanel" id="panel-expand" aria-labelledby="tab-expand" hidden>
+          <div class="chain">
+            <span class="chain__node chain__node--on">card</span>
+            <span class="chain__arrow">→</span>
+            <span class="chain__node chain__node--on">turn t-7f3a</span>
+            <span class="chain__arrow">→</span>
+            <span class="chain__node chain__node--on">原始对话行</span>
+            <span class="chain__arrow">→</span>
+            <span class="chain__node">span 128–214</span>
+          </div>
+          <div class="rawline__in" style="margin-top:0">
+            <div class="rawline__meta">原文 · 2026-10-22 · 你 · 213 字符 · revision 3f19c2</div>
+            <div class="rawline__q" style="font-size:14px">
+              「release 与双 target（Windows x86_64 与 aarch64-unknown-linux-gnu）的统一入口是 scripts/build-release.sh；
+              产物落在 dist/&lt;target&gt;/，各自带 SHA256SUMS。aarch64 产物已在树莓派（Debian 13 / glibc 2.41）实机跑过……」
+            </div>
+          </div>
+          <p class="dim" style="font-size:12.5px;line-height:1.85;margin-top:18px">
+            展开给到的是记忆正文与 <span class="code">turn:&lt;uid&gt;</span> 指针；按指针取那一轮用 <span class="code">recollect_turn</span>（可带前后各 10 轮），
+            按会话取全文用 <span class="code">recollect_session</span>。指针换个设备、重新导入一次都指向同一段。
+          </p>
+        </div>
+      </div>
+
+      <p class="dim" style="font-size:12px;line-height:1.85;margin-top:14px">
+        演示中的原文展开按 <span class="code">recollect_turn</span> / <span class="code">recollect_session</span> 的机制绘制；
+        按钮里的数字仅作示范，字段与流程来自真实实现。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 04 schema 分组 ============ -->
+  <section class="sec sec--tight">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">06</div>
+        <div>
+          <h2 class="sec-title">25 张正式表，五个方向</h2>
+          <p class="sec-lede">记忆层不是一张大表。身份与来源、抽取与审核、实体本身、使用与引用、运维，各自成组；审计与来源从建表那天就带着。</p>
+          <p class="dim" style="font-size:12.5px;line-height:1.8;margin-top:14px;max-width:62ch">表名不用记，看五个分组就行：每组各管一件事，缺哪组一眼能看出来。</p>
+        </div>
+      </div>
+
+      <div class="schemagrid" data-reveal>
+        <div class="schemacol">
+          <div class="schemacol__h">身份与来源<small>identity</small></div>
+          <ul>
+            <li>sessions</li>
+            <li>turns</li>
+            <li>session_principal_claim</li>
+            <li>device</li>
+            <li>import_log</li>
+          </ul>
+        </div>
+        <div class="schemacol">
+          <div class="schemacol__h">抽取与审核<small>pipeline</small></div>
+          <ul>
+            <li>extraction_run</li>
+            <li>extraction_batch</li>
+            <li>extraction_issue</li>
+            <li>review_item</li>
+            <li>review_decision</li>
+          </ul>
+        </div>
+        <div class="schemacol">
+          <div class="schemacol__h">实体<small>ontology</small></div>
+          <ul>
+            <li>anchor / alias</li>
+            <li>mention</li>
+            <li>attribute</li>
+            <li>relation</li>
+            <li>fact / state_assertion</li>
+            <li>episode / episode_fact</li>
+          </ul>
+        </div>
+        <div class="schemacol">
+          <div class="schemacol__h">使用与引用<small>surface</small></div>
+          <ul>
+            <li>card</li>
+            <li>memory_mention</li>
+            <li>fact_link</li>
+            <li>provenance</li>
+            <li>attestation</li>
+          </ul>
+        </div>
+        <div class="schemacol">
+          <div class="schemacol__h">运维<small>ops</small></div>
+          <ul>
+            <li>usage_counter</li>
+            <li>job_watermark</li>
+            <li>audit_log</li>
+            <li>attention</li>
+            <li>memory_stats</li>
+          </ul>
+        </div>
+      </div>
+      <p class="dim" style="font-size:12px;margin-top:18px">以上是主要分组，不是全表清单：25 张正式核心表，另有 7 张归属、审查、事件、归档、复用侧表，共 32 张；版本以 <span class="code">MEMORY_VERSION = 6</span> 为准。</p>
+    </div>
+  </section>
+
+  <section class="sec sec--tight">
+    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <a class="btn btn--ghost" href="architecture.html">← 架构与身份</a>
+      <a class="btn" href="pipeline.html">记忆是怎么来的 <span class="btn__arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__in">
+      <div>
+        <div class="foot__mark">recollect</div>
+        <p>面向 agent 的通用长期记忆服务。原始记录是事实源，记忆是索引。</p>
+      </div>
+      <div>
+        <div class="foot__col-title">页面</div>
+        <div class="foot__links">
+          <a href="companion.html">陪伴型</a>
+          <a href="engineering.html">工程型</a>
+          <a href="architecture.html">架构与身份</a>
+          <a href="memory.html">记忆模型</a>
+          <a href="pipeline.html">抽取流水线</a>
+          <a href="reliability.html">韧性</a>
+          <a href="evidence.html">证据</a>
+          <a href="solo.html">一台设备</a>
+        </div>
+      </div>
+      <div class="foot__note">
+        页面内容取自项目设计稿与实现。
+        页面里的动态数字仅作示范，用来说明状态怎么变，不代表线上读数。
+        <div class="foot__repo">
+          <a href="https://github.com/lingxinsuixing/recollect" target="_blank" rel="noopener">GitHub · lingxinsuixing/recollect <span aria-hidden="true">↗</span></a>
+          <span>作者 / 维护者：lingxinsuixing</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot__bottom">
+      <span>recollect · schema v6 · 2026</span>
+      <span>designed for agents, readable by humans</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script src="assets/memory-demo.js"></script>
+</body>
+</html>

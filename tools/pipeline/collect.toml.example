@@ -1,0 +1,52 @@
+# 采集器配置（每台机器一份）
+#
+# 形状与规则见 docs/2026-11-10-collector-standardization.md（或仓库设计档）。
+# 这份文件是本机可信配置：`converter` 直接 exec（不经 shell），改配置等于获得本机执行权。
+#
+# 用法：
+#   recollect-hub collect --config collect.toml --data-dir <数据目录> --json
+#   recollect-hub collect --status --data-dir <数据目录>          # 只读水位
+#   recollect-hub collect --config collect.toml --source qoder --dry-run --json
+#
+# 两道帽是全局（跨源）按日计：
+#   max_files_per_run —— 一轮最多处理几个文件
+#   max_turns_per_day —— 一天最多收多少“新增 human+agent 轮”
+
+[limits]
+quiet_ms = 600000            # 会话静默窗口：10 分钟（停笔后才收）
+max_files_per_run = 3
+max_turns_per_day = 300
+
+# ── Qoder：本机全部工作区 ────────────────────────────────────────────────
+[[source]]
+name = "qoder"
+kind = "files"
+root = "C:/Users/<you>/.qoder-cn/projects"
+glob = "*/*.jsonl"           # 每个工作区目录下的会话文件；只支持单层 *
+converter = [
+  "python3", "/path/to/recollect/tools/converters/qoder_v1.py",
+  "{segment}", "--out-dir", "{out}",
+  "--device", "local-qoder", "--source-agent", "qoder",
+  "--machine", "local", "--project-mode", "dir",
+]
+device_id = "local-qoder"
+source_agent = "qoder"
+project = "session"          # Qoder 由转换器按会话 directories 推项目名
+
+# ── MiniMax Code：本机 sqlite 库 ─────────────────────────────────────────
+# 首跑默认只收“未来”（把水位种子设为当前最大值），--backfill 才从 0 起。
+[[source]]
+name = "mcode"
+kind = "sqlite"
+db = "C:/Users/<you>/.minimax/v2/sqlite/runtime-state.sqlite"
+cursor_sql = "SELECT COALESCE(MAX(created_at_ms),0) FROM local_runtime_message_rows"
+converter = [
+  "python3", "/path/to/recollect/tools/converters/mcode_v1.py",
+  "{out}/mcode.v1.json",
+  "--db", "C:/Users/<you>/.minimax/v2/sqlite/runtime-state.sqlite",
+  "--since-ms", "{since_ms}",
+  "--principal-id", "p-xiaolong",
+]
+device_id = "local-mcode"
+source_agent = "mcode"
+project = "session"

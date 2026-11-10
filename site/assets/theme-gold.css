@@ -1,0 +1,377 @@
+/* ==========================================================================
+   recollect — 暗金主题（预览：?theme=gold）
+   方向：仪器被切开、又按同一套网格拼回。
+   只做三件事：换材质（暖炭 + 青铜）、加粗线并切角、让动效变硬变快。
+   ========================================================================== */
+
+[data-theme="gold"] {
+  --ink-0: #0a0805;
+  --ink-1: #0c0a06;
+  --ink-2: #12100a;
+  --ink-3: #1b170f;
+
+  --bone: #f2e9d6;
+  --bone-2: #d8cbb0;
+  --body-dim: #b5a88e;
+  --muted: #8e8168;
+  --muted-2: #685e4b;
+
+  --brass: #c89b4f;
+  --brass-2: #eccb8b;
+  --brass-dim: rgba(200, 155, 79, 0.16);
+  --slate: #9aa39c;
+  --slate-dim: rgba(154, 163, 156, 0.14);
+  --rust: #b2552f;
+  --rust-dim: rgba(178, 85, 47, 0.14);
+  --sage: #7f9469;
+
+  --line: rgba(232, 212, 170, 0.15);
+  --line-2: rgba(232, 212, 170, 0.075);
+  --line-3: rgba(232, 212, 170, 0.34);
+  --streak: rgba(233, 205, 150, 0.42);
+
+  --ease: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --ease-out: cubic-bezier(0.12, 1, 0.2, 1);
+}
+
+/* ---------- 底：暖炭 + 双尺度网格 ---------- */
+[data-theme="gold"] body { background: var(--ink-0); }
+
+[data-theme="gold"] body::before {
+  background-image:
+    linear-gradient(to right, rgba(232, 212, 170, 0.038) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(232, 212, 170, 0.038) 1px, transparent 1px),
+    linear-gradient(to right, rgba(232, 212, 170, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(232, 212, 170, 0.02) 1px, transparent 1px);
+  background-size: 88px 88px, 88px 88px, 22px 22px, 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 0%, #000 18%, transparent 80%);
+  mask-image: radial-gradient(ellipse 92% 74% at 50% 0%, #000 18%, transparent 80%);
+}
+
+[data-theme="gold"] body::after {
+  background:
+    radial-gradient(56% 40% at 76% -4%, rgba(200, 155, 79, 0.17), transparent 70%),
+    radial-gradient(44% 34% at 6% 2%, rgba(178, 85, 47, 0.08), transparent 72%);
+}
+
+[data-theme="gold"] html::after {
+  background: linear-gradient(
+    112deg,
+    transparent 42%,
+    rgba(233, 205, 150, 0.05) 50%,
+    transparent 58%
+  );
+}
+
+/* ---------- 导航：加粗下沿，选中项是硬色块 ---------- */
+[data-theme="gold"] .nav {
+  background: rgba(10, 8, 5, 0.9);
+  border-bottom: 1px solid var(--line);
+}
+
+[data-theme="gold"] .nav__mark { border-width: 1.5px; }
+[data-theme="gold"] .nav__links a::after { height: 2px; }
+[data-theme="gold"] .nav__links a[aria-current="page"] { color: var(--bone); }
+[data-theme="gold"] .nav__links a[aria-current="page"]::after { background: var(--brass); opacity: 1; }
+
+/* ---------- 首屏与内页：可复用的铜盘背景层 ---------- */
+[data-theme="gold"] .plate-layer {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  background: url("img/plate.webp") center / cover no-repeat;
+  filter: brightness(0.72) contrast(1.12) saturate(0.9);
+}
+
+[data-theme="gold"] .plate-layer--hero {
+  right: -6%;
+  top: -10%;
+  width: 68%;
+  height: 124%;
+  opacity: 0.22;
+  clip-path: polygon(20% 0, 100% 0, 100% 78%, 86% 100%, 58% 94%, 34% 100%, 4% 88%, 8% 56%, 0 26%);
+  -webkit-mask-image: linear-gradient(to right, transparent 4%, #000 46%);
+  mask-image: linear-gradient(to right, transparent 4%, #000 46%);
+  transform: translate3d(0, var(--hero-shift, 0px), 0);
+  will-change: transform;
+}
+
+[data-theme="gold"] .plate-layer--hero-b {
+  left: 46%;
+  bottom: -12%;
+  width: 26%;
+  height: 44%;
+  opacity: 0.14;
+  filter: brightness(0.6) contrast(1.2);
+  clip-path: polygon(0 34%, 24% 0, 100% 10%, 88% 66%, 52% 100%, 14% 88%);
+}
+
+[data-theme="gold"] .plate-layer--page {
+  right: -12%;
+  top: -34%;
+  width: 60%;
+  height: 168%;
+  opacity: 0.13;
+  filter: brightness(0.64) contrast(1.16) saturate(0.85);
+  clip-path: polygon(0 34%, 24% 0, 100% 10%, 88% 66%, 52% 100%, 14% 88%);
+  -webkit-mask-image: linear-gradient(to left, transparent 2%, #000 66%);
+  mask-image: linear-gradient(to left, transparent 2%, #000 66%);
+}
+
+[data-theme="gold"] .plate-layer--ambient {
+  position: fixed;
+  right: -14vw;
+  top: 18vh;
+  width: 52vw;
+  height: 52vw;
+  opacity: 0.045;
+  filter: brightness(0.55) contrast(1.08) saturate(0.75);
+  clip-path: circle(50% at 50% 50%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 18%, #000 46%, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 50%, transparent 18%, #000 46%, transparent 72%);
+}
+
+[data-theme="gold"] .hero__veil {
+  background:
+    linear-gradient(to right, rgba(10, 8, 5, 0.95) 0%, rgba(10, 8, 5, 0.76) 44%, rgba(10, 8, 5, 0.22) 74%, transparent 100%),
+    linear-gradient(to top, var(--ink-0) 2%, transparent 32%);
+}
+
+[data-theme="gold"] .hero__title em::after {
+  height: 2px;
+  background: var(--brass);
+  opacity: 0.5;
+}
+
+/* ---------- 分区：断开的刻度线（碎而有序） ---------- */
+[data-theme="gold"] .sec::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--gut);
+  right: var(--gut);
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--line-3) 0 96px,
+    transparent 96px 108px,
+    var(--line-3) 108px 120px,
+    transparent 120px 156px,
+    var(--line-3) 156px 164px,
+    transparent 164px 200px
+  );
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* 编号：铜色铭牌，右上切角 */
+[data-theme="gold"] .sec-num {
+  display: inline-flex;
+  justify-self: start;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 9px;
+  background: var(--brass);
+  color: #0a0805;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  clip-path: polygon(0 0, 100% 0, 100% 64%, calc(100% - 7px) 100%, 0 100%);
+}
+
+[data-theme="gold"] .sec-num::after { display: none; }
+[data-theme="gold"] .sec-title { letter-spacing: -0.018em; }
+
+/* ---------- 面板：切角 + 加粗表头线 + 角标 ---------- */
+[data-theme="gold"] .panel,
+[data-theme="gold"] .demo,
+[data-theme="gold"] .term,
+[data-theme="gold"] .graphbox,
+[data-theme="gold"] .board,
+[data-theme="gold"] .railwrap,
+[data-theme="gold"] .sim__left,
+[data-theme="gold"] .readout,
+[data-theme="gold"] .gatecard,
+[data-theme="gold"] .entpanel,
+[data-theme="gold"] .insp {
+  background:
+    linear-gradient(180deg, rgba(232, 212, 170, 0.045), rgba(232, 212, 170, 0.01));
+  border-color: var(--line-3);
+}
+
+[data-theme="gold"] .panel,
+[data-theme="gold"] .demo,
+[data-theme="gold"] .railwrap,
+[data-theme="gold"] .sim__left,
+[data-theme="gold"] .readout {
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+}
+
+[data-theme="gold"] .panel__head { border-bottom: 2px solid rgba(232, 212, 170, 0.18); }
+[data-theme="gold"] .demo__bar { border-bottom: 2px solid rgba(232, 212, 170, 0.14); }
+[data-theme="gold"] .term__bar { border-bottom: 2px solid rgba(232, 212, 170, 0.14); }
+[data-theme="gold"] .term__body { background: #080604; }
+
+/* 角标：四个 L 形定位角（只在主面板上） */
+[data-theme="gold"] .panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border-top: 2px solid var(--brass);
+  border-left: 2px solid var(--brass);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ---------- 统计条：更硬的骨架 ---------- */
+[data-theme="gold"] .stats { border-top: 2px solid var(--line-3); border-bottom: 0; }
+[data-theme="gold"] .stat { border-right: 1px solid var(--line-2); }
+[data-theme="gold"] .stat__num { color: var(--bone); }
+[data-theme="gold"] .stat__num small { color: var(--brass); letter-spacing: 0.14em; }
+
+/* ---------- 三主张：序号变成小铜块 ---------- */
+[data-theme="gold"] .triptych { border-top: 2px solid var(--line-3); }
+[data-theme="gold"] .claim__idx {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  background: rgba(200, 155, 79, 0.16);
+  border-left: 2px solid var(--brass);
+  color: var(--brass-2);
+  letter-spacing: 0.18em;
+}
+
+[data-theme="gold"] .claim__title { font-weight: 300; }
+
+/* ---------- 按钮 / 标签 ---------- */
+[data-theme="gold"] .btn {
+  border-width: 1.5px;
+  border-color: var(--line-3);
+  letter-spacing: 0.18em;
+}
+
+[data-theme="gold"] .btn:hover {
+  background: var(--brass);
+  border-color: var(--brass);
+  color: #0a0805;
+}
+
+[data-theme="gold"] .chip { border-width: 1px; letter-spacing: 0.14em; }
+
+/* ---------- 表格 / 台账 ---------- */
+[data-theme="gold"] .spec th { border-bottom: 2px solid var(--line-3); color: var(--muted); }
+[data-theme="gold"] .ledger th { border-bottom: 2px solid var(--line-3); }
+[data-theme="gold"] .ledger td { border-bottom: 1px solid var(--line-2); }
+[data-theme="gold"] .spec td { border-bottom: 1px solid var(--line-2); }
+
+/* ---------- 架构 / 记忆 / 韧性页的局部 ---------- */
+[data-theme="gold"] .bnode { border-color: var(--line); background: rgba(232, 212, 170, 0.018); }
+[data-theme="gold"] .bnode--hub { border-color: rgba(200, 155, 79, 0.5); background: rgba(200, 155, 79, 0.07); }
+[data-theme="gold"] .board__wires path { stroke: rgba(232, 212, 170, 0.3); }
+[data-theme="gold"] .board__wires path.dash { stroke: rgba(232, 212, 170, 0.18); }
+
+[data-theme="gold"] .layer { border-bottom: 1px solid var(--line-2); }
+[data-theme="gold"] .layer.is-open { background: rgba(200, 155, 79, 0.05); }
+[data-theme="gold"] .layer__n { color: var(--brass); }
+
+[data-theme="gold"] .rail::before { background: var(--line-3); height: 2px; top: 39px; }
+[data-theme="gold"] .stage__t { font-size: 10.5px; }
+[data-theme="gold"] .stage::before { width: 8px; height: 8px; margin-left: -4px; }
+
+[data-theme="gold"] .gatecard__row { border-bottom: 1px solid var(--line-2); }
+[data-theme="gold"] .issue { border-width: 1px; border-color: rgba(178, 85, 47, 0.4); }
+
+[data-theme="gold"] .order { border-color: var(--line-3); }
+[data-theme="gold"] .order__step { border-right: 1px solid var(--line-2); }
+[data-theme="gold"] .order__step.is-on { background: rgba(200, 155, 79, 0.1); }
+
+[data-theme="gold"] .constraint { border-bottom: 1px solid var(--line-2); }
+[data-theme="gold"] .compare { background: var(--line-3); border-color: var(--line-3); }
+[data-theme="gold"] .compare > div { background: #0b0906; }
+
+[data-theme="gold"] .foot { border-top: 2px solid var(--line-3); }
+[data-theme="gold"] .index-row { border-bottom: 1px solid var(--line-2); }
+[data-theme="gold"] .index-row__t { letter-spacing: 0.005em; }
+
+[data-theme="gold"] .journey { border-top: 2px solid var(--line-3); }
+[data-theme="gold"] .journey::before { opacity: 0.8; }
+
+/* ---------- 动效：更快、更硬、带切角 ---------- */
+[data-theme="gold"] html.js [data-reveal],
+html.js[data-theme="gold"] [data-reveal] {
+  transform: translate3d(0, 12px, 0);
+  transition-duration: 0.64s, 0.72s;
+  transition-timing-function: cubic-bezier(0.12, 1, 0.2, 1);
+  transition-delay: calc(var(--i, 0) * 55ms);
+}
+
+html.js[data-theme="gold"] [data-reveal="line"] {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.9s cubic-bezier(0.12, 1, 0.2, 1);
+}
+
+html.js[data-theme="gold"] [data-reveal="line"].is-in { clip-path: inset(0 0 0 0); }
+
+[data-theme="gold"] .btn,
+[data-theme="gold"] .nav__links a,
+[data-theme="gold"] .nav__links a::after,
+[data-theme="gold"] .bnode,
+[data-theme="gold"] .index-row,
+[data-theme="gold"] .claim,
+[data-theme="gold"] .tab {
+  transition-duration: 0.18s;
+}
+
+[data-theme="gold"] .index-row:hover { padding-left: 14px; }
+[data-theme="gold"] .claim:hover { background: rgba(200, 155, 79, 0.035); }
+
+[data-theme="gold"] .hero__eyebrow::before { height: 2px; width: 48px; }
+[data-theme="gold"] .hero__meta span::before { border-color: var(--brass); }
+[data-theme="gold"] .hero__scroll i { width: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.js[data-theme="gold"] [data-reveal="line"] { clip-path: none; }
+}
+
+/* ---------- 图示跟随主题（首页地图 / 三主张小图 / 实体图） ---------- */
+[data-theme="gold"] .map-cap { fill: rgba(232, 212, 170, 0.44); }
+[data-theme="gold"] .map-cap--hi { fill: rgba(242, 233, 214, 0.66); }
+[data-theme="gold"] .map-cap--mid { fill: rgba(232, 212, 170, 0.5); }
+[data-theme="gold"] .map-cap--lo { fill: rgba(232, 212, 170, 0.32); }
+[data-theme="gold"] .map-cap--brass { fill: rgba(236, 203, 139, 0.9); }
+[data-theme="gold"] .map-cap--brass2 { fill: rgba(242, 226, 190, 0.95); }
+[data-theme="gold"] .map-cap--rust { fill: rgba(198, 112, 76, 0.85); }
+
+[data-theme="gold"] .map-lbl { fill: rgba(232, 212, 170, 0.54); }
+[data-theme="gold"] .map-lbl--brass { fill: var(--brass); }
+[data-theme="gold"] .map-box { stroke: rgba(232, 212, 170, 0.22); fill: rgba(232, 212, 170, 0.022); }
+[data-theme="gold"] .map-box--hub { stroke: rgba(200, 155, 79, 0.55); fill: rgba(200, 155, 79, 0.06); }
+[data-theme="gold"] .map-wire { stroke: rgba(232, 212, 170, 0.26); }
+[data-theme="gold"] .map-wire--dash { stroke: rgba(232, 212, 170, 0.16); }
+[data-theme="gold"] .map-sep { stroke: rgba(232, 212, 170, 0.1); }
+[data-theme="gold"] .map-sep--brass { stroke: rgba(200, 155, 79, 0.3); }
+
+[data-theme="gold"] .claims-viz .stroke { stroke: rgba(232, 212, 170, 0.28); }
+[data-theme="gold"] .claims-viz .brass { stroke: var(--brass); }
+[data-theme="gold"] .claims-viz .lbl { fill: rgba(232, 212, 170, 0.46); }
+
+[data-theme="gold"] .g-edge { stroke: rgba(232, 212, 170, 0.22); }
+[data-theme="gold"] .g-edge.is-hot { stroke: rgba(236, 203, 139, 0.7); }
+[data-theme="gold"] .g-label { fill: rgba(232, 212, 170, 0.38); }
+[data-theme="gold"] .g-node text { fill: rgba(242, 233, 214, 0.88); }
+[data-theme="gold"] .g-anchor text { fill: var(--brass-2); }
+
+/* 窄屏：碎片退后，别压正文 */
+@media (max-width: 860px) {
+  [data-theme="gold"] .plate-layer--hero { opacity: 0.12; width: 96%; right: -38%; top: -4%; filter: brightness(0.6) contrast(1.1); }
+  [data-theme="gold"] .plate-layer--hero-b { display: none; }
+  [data-theme="gold"] .plate-layer--page { opacity: 0.08; right: -26%; top: -20%; }
+  [data-theme="gold"] .plate-layer--ambient { opacity: 0.03; right: -30vw; top: 22vh; width: 80vw; height: 80vw; }
+  [data-theme="gold"] .sec::before { opacity: 0.32; }
+}

@@ -1,0 +1,8 @@
+{
+  "error": {
+    "message": "The service is temporarily busy. We advise switching to an alternative LLM API service. (request id: 00000000000000000000000000000000)",
+    "type": "server_error",
+    "param": null,
+    "code": "server_error"
+  }
+}

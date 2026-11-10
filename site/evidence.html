@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>证据与纪律 — recollect</title>
+<link rel="canonical" href="https://lingxinsuixing.github.io/recollect/evidence.html">
+<meta name="description" content="被实测推翻的设计、六条不可协商的工程约束，以及「写零行等于错误」的判据形状。">
+<meta name="theme-color" content="#0a0805">
+<meta property="og:type" content="website">
+<meta property="og:title" content="证据与纪律 — recollect">
+<meta property="og:description" content="十二条被实测推翻的设计，和六条不可协商的工程约束。">
+<meta property="og:image" content="https://lingxinsuixing.github.io/recollect/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<script>(function(){var m=location.search.match(/[?&]theme=([a-z-]+)/),t=m?m[1]:"gold";document.documentElement.dataset.theme=(t==="default"||t==="cold")?"":t;})();</script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060607'/%3E%3Crect x='10' y='10' width='12' height='12' transform='rotate(45 16 16)' fill='none' stroke='%23c8a468' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/theme-gold.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  .ledger { width: 100%; border-collapse: collapse; }
+  .ledger th {
+    text-align: left; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .16em;
+    text-transform: uppercase; font-weight: 400; color: var(--muted-2);
+    padding: 0 14px 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .ledger td { padding: 15px 14px 15px 0; border-bottom: 1px solid var(--line-2); vertical-align: top; font-size: 13.5px; color: var(--body-dim); line-height: 1.75; }
+  .ledger tr { transition: background .4s; }
+  .ledger tbody tr:hover { background: rgba(241,237,229,.018); }
+  .ledger td:first-child { font-family: var(--font-mono); font-size: 10px; color: var(--muted-2); width: 40px; padding-top: 18px; }
+  .ledger td:nth-child(2) { color: var(--bone); width: 30%; }
+  .ledger td:nth-child(2) s { text-decoration-color: rgba(196,99,67,.55); text-decoration-thickness: 1px; color: var(--muted); }
+  .ledger td:last-child { font-family: var(--font-mono); font-size: 11.5px; color: var(--rust); white-space: nowrap; }
+  .ledger .grp td { padding: 34px 0 10px; border-bottom: 2px solid var(--line-3); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .14em; color: var(--brass); }
+  .ledger .grp:first-child td { padding-top: 6px; }
+  .ledger .num { font-family: var(--font-mono); font-size: 12px; color: var(--brass-2); }
+
+  .constraints { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+  .constraint { padding: clamp(22px, 2.6vw, 34px) clamp(16px, 2vw, 26px); border-right: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); transition: background .5s; }
+  .constraint:nth-child(3n) { border-right: 0; }
+  .constraint:hover { background: rgba(241,237,229,.02); }
+  .constraint__n { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; color: var(--brass); }
+  .constraint__t { margin-top: 16px; font-family: var(--font-display); font-weight: 300; font-size: clamp(18px, 1.8vw, 22px); line-height: 1.45; }
+  .constraint__d { margin-top: 12px; font-size: 12.5px; line-height: 1.85; color: var(--muted); }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .compare > div { background: var(--ink-0); min-width: 0; }
+  .compare__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--line-2); }
+  .compare__label { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); }
+  .compare pre { margin: 0; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.9; color: var(--muted); overflow-x: auto; }
+  .compare .bad { color: var(--rust); }
+  .compare .good { color: var(--sage); }
+  .compare .c { color: var(--muted-2); }
+  .compare .k { color: var(--bone-2); }
+  .compare__bad { box-shadow: inset 2px 0 0 rgba(196,99,67,.55); }
+  .compare__good { box-shadow: inset 2px 0 0 rgba(134,163,126,.55); }
+
+  .bounds { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3vw, 40px); }
+  .bounds__col h3 { font-family: var(--font-display); font-weight: 300; font-size: 21px; margin-bottom: 14px; }
+  .bounds__col ul { list-style: none; margin: 0; padding: 0; }
+  .bounds__col li { padding: 10px 0 10px 18px; border-bottom: 1px solid var(--line-2); font-size: 13px; color: var(--body-dim); line-height: 1.75; position: relative; }
+  .bounds__col li::before { content: ""; position: absolute; left: 0; top: 19px; width: 5px; height: 5px; border: 1px solid var(--muted-2); transform: rotate(45deg); }
+  .bounds__col--no li::before { border-color: rgba(196,99,67,.6); }
+
+  .bigquote { font-family: var(--font-display); font-weight: 300; font-size: clamp(26px, 3.6vw, 46px); line-height: 1.4; max-width: 24ch; }
+  .bigquote span { color: var(--brass); }
+
+  .vec { margin-top: clamp(38px, 5vw, 64px); border-top: 2px solid var(--line-3); padding-top: 24px; }
+  .vec__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 22px; }
+  .vec__k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+  .vec__head p { font-size: 13px; color: var(--body-dim); }
+  .vec__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .vec__item { background: var(--ink-0); padding: clamp(20px, 2.4vw, 28px); }
+  .vec__n { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+  .vec__item h3 { margin-top: 12px; font-family: var(--font-display); font-weight: 300; font-size: clamp(18px, 1.8vw, 22px); line-height: 1.45; }
+  .vec__item p { margin-top: 10px; font-size: 13px; line-height: 1.85; color: var(--muted); }
+  .vec__read { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line-2); font-family: var(--font-mono); font-size: 10.5px; line-height: 1.9; color: var(--brass-2); letter-spacing: .02em; }
+  .vec__foot { margin-top: 16px; font-size: 12px; line-height: 1.9; color: var(--muted-2); max-width: 88ch; }
+
+  @media (max-width: 980px) {
+    .vec__grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 980px) {
+    .constraints { grid-template-columns: 1fr 1fr; }
+    .constraint:nth-child(3n) { border-right: 1px solid var(--line-2); }
+    .constraint:nth-child(2n) { border-right: 0; }
+    .compare { grid-template-columns: 1fr; }
+    .bounds { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .ledger, .ledger tbody, .ledger tbody tr { display: block; width: 100%; }
+    .ledger thead { display: none; }
+    .ledger td, .ledger td:first-child, .ledger td:nth-child(2), .ledger td:last-child {
+      display: block; width: auto; white-space: normal; border: 0; padding: 3px 0;
+    }
+    .ledger tbody tr { padding: 15px 0; border-bottom: 1px solid var(--line-2); }
+    .ledger .grp { padding: 26px 0 8px; border-bottom: 2px solid var(--line-3); }
+    .ledger .grp td { padding: 0; }
+    .ledger td:first-child { color: var(--brass); font-size: 10px; padding-bottom: 4px; }
+    .ledger td:nth-child(2) { font-size: 15px; }
+    .ledger td:last-child { margin-top: 6px; }
+  }
+  @media (max-width: 640px) {
+    .constraints { grid-template-columns: 1fr; }
+    .constraint { border-right: 0 !important; }
+    .ledger td:last-child { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" data-progress></div>
+<div class="plate-layer plate-layer--ambient" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__brand" href="index.html" aria-label="recollect 首页">
+    <span class="nav__mark" aria-hidden="true"></span>
+    <span class="nav__word">recollect</span>
+    <span class="nav__sub">agent-native memory</span>
+  </a>
+  <nav class="nav__links" aria-label="主导航">
+    <a href="index.html" data-nav-link>总览</a>
+    <a href="companion.html" data-nav-link>陪伴</a>
+    <a href="engineering.html" data-nav-link>工程</a>
+    <a href="architecture.html" data-nav-link>架构</a>
+    <a href="memory.html" data-nav-link>记忆模型</a>
+    <a href="pipeline.html" data-nav-link>抽取</a>
+    <a href="reliability.html" data-nav-link>韧性</a>
+    <a href="evidence.html" data-nav-link>证据</a>
+    <a href="solo.html" data-nav-link>单机</a>
+  </nav>
+  <div class="nav__meta">
+    <a class="nav__lang" href="en/evidence.html" aria-label="Switch to English" hreflang="en">EN</a>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="nav__meta-text">schema v6</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="pagehead">
+    <div class="pagehead__bg" aria-hidden="true"></div>
+    <div class="plate-layer plate-layer--page" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="pagehead__kicker">05 / evidence</div>
+      <h1 class="pagehead__title display">先证伪，<br>再写代码</h1>
+      <p class="pagehead__lede">
+        这一页不介绍功能，只回答一个问题：凭什么信。
+        下面每一条数字都来自一次真实的对照读数；每一条被推翻的设计，都曾经看起来很有道理。
+      </p>
+      <div class="pagehead__meta">
+        <span class="chip chip--rust">12 条负结果</span>
+        <span class="chip chip--brass">6 条硬约束</span>
+        <span class="chip">3,335 个测试</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 负结果 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">01</div>
+        <div>
+          <h2 class="sec-title">被实测推翻的十二条</h2>
+          <p class="sec-lede">
+            这是前身项目留下的负结果台账，也是新项目的立项依据。写在这里的每一条，都曾经是「显然正确」的设计。
+          </p>
+        </div>
+      </div>
+
+      <p class="dim" data-reveal style="font-size:13.5px;line-height:1.9;max-width:62ch;margin-bottom:26px">
+        12 条按三种疑问分：4 条在问「打分够不够」，2 条在问「能不能自动合并」，6 条在问「这个能力是不是真的在跑」。
+      </p>
+
+      <table class="ledger" data-reveal>
+        <thead>
+          <tr><th>#</th><th>原设计</th><th>实测读数</th><th>改成了什么</th></tr>
+        </thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">用分数代替判断（4 条）</td></tr>
+          <tr>
+            <td>01</td>
+            <td><s>用 confidence 当可信度闸</s></td>
+            <td>模型自报值 192/285 挤在 ≥0.9，全库只有 <span class="num">8</span> 个不同取值</td>
+            <td>等于没查；按分数过滤也筛不出什么</td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td><s>用向量做语义判定</s></td>
+            <td>五个向量模型都分不开：对的和错的在分布上重叠</td>
+            <td>判定不用它；召回也先用关键词（见下）</td>
+          </tr>
+          <tr>
+            <td>03</td>
+            <td><s>相关性 = 实体 + 骨架 + 向量 + 词法四维加权</s></td>
+            <td>能挡掉 6/6 条不该要的，但把 3/4 条本该要的也挡了</td>
+            <td>怎么调都分不开好坏；放弃这套打分</td>
+          </tr>
+          <tr>
+            <td>04</td>
+            <td><s>交叉印证在 token 层聚簇</s></td>
+            <td>6 条错的里，有 3 条被它判成了对</td>
+            <td>改到「实体」这一层再做印证</td>
+          </tr>
+          <tr class="grp"><td colspan="4">能不能自动合并（2 条）</td></tr>
+          <tr>
+            <td>05</td>
+            <td><s>确定性 fingerprint 做跨会话统一</s></td>
+            <td>覆盖率 <span class="num">8.7%</span>（9/103）；再放宽就是错并</td>
+            <td>改成「重复不写」+ 先粗筛候选，不自动合并</td>
+          </tr>
+          <tr>
+            <td>06</td>
+            <td><s>所有权冲突是急症，应自动覆盖</s></td>
+            <td>被 &gt;1 个来源写过的实体 <span class="num">0</span> 条</td>
+            <td>只记冲突、不自动覆盖；猜错就把原话盖掉了</td>
+          </tr>
+          <tr class="grp"><td colspan="4">这个能力是不是真的在跑（6 条）</td></tr>
+          <tr>
+            <td>07</td>
+            <td><s>中文 FTS 按字符切分</s></td>
+            <td>10 条真实查询，本该命中 22 次，结果 <span class="num">0</span> 次，还不报错</td>
+            <td>改成逐词归一 + 影子列；10 条里 9 条查得到</td>
+          </tr>
+          <tr>
+            <td>08</td>
+            <td><s>蒸馏进度与记忆同事务</s></td>
+            <td>事务嵌套后每条写都悄悄失败，进度照常往前走</td>
+            <td>改成允许重投、写入幂等</td>
+          </tr>
+          <tr>
+            <td>09</td>
+            <td><s>空间、情感、意图—技能—知识是独立维度</s></td>
+            <td>三张空间表在库里根本不存在；<span class="code">located_at</span> 出现 0 次</td>
+            <td>只存在于纸上，砍掉</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td><s>记忆衰减 / ACT-R 强度整套在跑</s></td>
+            <td>每轮能扫的窗口正好被置顶和归档占满，实际处理 0 条</td>
+            <td>等于装饰，砍掉</td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td><s>告警已经能到达用户</s></td>
+            <td>attention 表没有任何面向人的读者，只到「已落库」为止</td>
+            <td>没人看得到，就算没交付</td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td><s>系统具备主动召回</s></td>
+            <td>MCP 没有推送通道，系统只能等 agent 来问</td>
+            <td>「主动递来历史」从来没做到</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="vec" data-reveal>
+        <div class="vec__head">
+          <span class="vec__k">为什么现在不做向量召回</span>
+          <p>第 02 条讲的是「判定」；这里讲「召回」。三条理由按分量排。</p>
+        </div>
+        <div class="vec__grid">
+          <article class="vec__item">
+            <div class="vec__n">01 / 够用</div>
+            <h3>关键词已经够快，也够准</h3>
+            <p>单看一个词，命中就是索引里真的有它，不是算出来的相似度；多词按「或」召回，宁可多给几条，再让模型筛。</p>
+            <div class="vec__read">本机 1,045 行索引<br>单次查询 0.02–1.1 ms</div>
+          </article>
+          <article class="vec__item">
+            <div class="vec__n">02 / 成本</div>
+            <h3>小机器背不动向量模型</h3>
+            <p>常驻的向量化模型要占内存和 CPU；云端的 embedding 服务我们也还没测过，不把没测过的东西放进主路径。</p>
+            <div class="vec__read">内存 / CPU 是本地节点的硬约束</div>
+          </article>
+          <article class="vec__item">
+            <div class="vec__n">03 / 复杂度</div>
+            <h3>多一套索引，就多一套麻烦</h3>
+            <p>多一份索引、同步、失效与重建；现在的场景关键词基本够用。真需要时，做成可选接口加独立表，不动核心。</p>
+            <div class="vec__read">默认不引入 · 需要时外挂</div>
+          </article>
+        </div>
+        <p class="vec__foot">
+          实测口径：本机中心 memory.db 只读打开，rc_shadow 1,045 行，2026-11-09；
+          SQLite FTS5 MATCH，不含网络与结果组装。多词是「或」不是「且」——召回宁可宽一点，由模型和闸收窄。
+          另外，没有 LLM 时入库后的关键词检索照常可用；缺的是抽取，不是查。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 六条约束 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">02</div>
+        <div>
+          <h2 class="sec-title">六条不可协商</h2>
+          <p class="sec-lede">负结果的反面就是约束。它们不是愿景，而是合并代码前要过的一关。</p>
+        </div>
+      </div>
+
+      <div class="constraints" data-reveal>
+        <div class="constraint">
+          <div class="constraint__n">C1</div>
+          <div class="constraint__t">原文只增不改，<br>记忆可以整层重建</div>
+          <div class="constraint__d">记忆坏了能从头再抽一遍，原文不动；两边的进度各记各的，互不牵连。这是允许犯错的地基。</div>
+        </div>
+        <div class="constraint">
+          <div class="constraint__n">C2</div>
+          <div class="constraint__t">读的时候不叫模型，<br>判断都在后台做</div>
+          <div class="constraint__d">后台判断有配额、能重复跑、结论可撤销；预算按家族共用一份。</div>
+        </div>
+        <div class="constraint">
+          <div class="constraint__n">C3</div>
+          <div class="constraint__t">每个功能同时交付<br>用的人，和一个会变红的测试</div>
+          <div class="constraint__d">没人用、也没测试能证明它坏了的功能，等于没做——旧项目就死在这。</div>
+        </div>
+        <div class="constraint">
+          <div class="constraint__n">C4</div>
+          <div class="constraint__t">静默即缺陷</div>
+          <div class="constraint__d">写零行算错误；不看「成功」开关；假装没数据按最高优先级查；探活必须真的调一次。</div>
+        </div>
+        <div class="constraint">
+          <div class="constraint__n">C5</div>
+          <div class="constraint__t">不用模型的信号，<br>只能用来缩小范围</div>
+          <div class="constraint__d">下结论交给模型；排序和拦截分开；人需要确认的量，不随数据变多而变大。</div>
+        </div>
+        <div class="constraint">
+          <div class="constraint__n">C6</div>
+          <div class="constraint__t">核心不认识任何具体 agent</div>
+          <div class="constraint__d">某个 agent 专用的东西一律放到外部转换器；工具按真正用得上的手来设，不按年头堆。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 判据的形状 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">03</div>
+        <div>
+          <h2 class="sec-title">一个测试长什么样，决定它能抓到什么</h2>
+          <p class="sec-lede">
+            旧写法只断言 <span class="code">ok == true</span>；新写法断言真正写了几行。
+            差别不在风格，而在于——前者对「什么都没写」永远为真。
+          </p>
+        </div>
+      </div>
+
+      <div class="compare" data-reveal>
+        <div class="compare__bad">
+          <div class="compare__head"><span class="compare__label">before</span><span class="chip chip--rust">会假绿</span></div>
+          <pre><span class="c">// 返回了 Ok，但一行都没写</span>
+<span class="k">let</span> report = cycle_once(&amp;db)?;
+assert!(report.ok);
+
+<span class="c">// 事务不可重入 + 读走独立连接池</span>
+<span class="c">// ⇒ 每条写静默失败，水位照常推进</span>
+<span class="c">// ⇒ 这个测试连绿三个版本</span></pre>
+        </div>
+        <div class="compare__good">
+          <div class="compare__head"><span class="compare__label">after</span><span class="chip chip--sage">会变红</span></div>
+          <pre><span class="c">// 断言真实行数与水位差</span>
+<span class="k">let</span> before = count_rows(&amp;db)?;
+cycle_once(&amp;db)?;
+<span class="k">let</span> after = count_rows(&amp;db)?;
+assert_eq!(after - before, <span class="good">3</span>);
+assert!(watermark(&amp;db)? &gt; before_wm);</pre>
+        </div>
+      </div>
+
+      <div class="pullquote" style="border-left:1px solid var(--brass);padding-left:22px;margin-top:44px" data-reveal>
+        <div class="bigquote">判据不许用 <span>ok</span> 字段，<br>测试断言<span>行数</span>。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 边界 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">04</div>
+        <div>
+          <h2 class="sec-title">承诺范围，也是证据的一部分</h2>
+          <p class="sec-lede">把「跑过什么」和「还没跑什么」分开写，才不会把设计稿读成线上真实数据。</p>
+        </div>
+      </div>
+
+      <div class="bounds" data-reveal>
+        <div class="bounds__col">
+          <h3>已经跑过的路径</h3>
+          <ul>
+            <li>Windows x86_64 的 debug 构建与完整工作区测试</li>
+            <li>四种来源的转换器都过了入库检查：Claude / MiniMax / Qoder / DSH</li>
+            <li>合成样本与本地回环的端到端链路</li>
+            <li>aarch64 产物在树莓派（Debian 13 / glibc 2.41）实机起过</li>
+            <li>中心自用试跑：导入 → 抽取 → 推导 → 召回跑通</li>
+          </ul>
+        </div>
+        <div class="bounds__col bounds__col--no">
+          <h3>不写成事实的部分</h3>
+          <ul>
+            <li>无人值守一周的连续读数</li>
+            <li>真机脱离中心（断网五天）后的长时间运行</li>
+            <li>多租户共用时的成本曲线</li>
+            <li>生产规模的召回质量指标</li>
+            <li>任何「已经生产就绪」的结论</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="stats" style="margin-top:clamp(40px,5vw,64px)" data-reveal>
+        <div class="stat">
+          <div class="stat__num"><span data-count="22">0</span><small>模块</small></div>
+          <div class="stat__label">契约、存储、网络、使用入口各自成箱</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num"><span data-count="3335">0</span><small>测试</small></div>
+          <div class="stat__label">测试函数；判据看真正写了几行、值在不在允许范围内</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num"><span data-count="25">0</span><small>表</small></div>
+          <div class="stat__label">正式记忆表，第 6 版结构</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num"><span data-count="41">0</span><small>工具</small></div>
+          <div class="stat__label">13 个共享记忆工具 + 28 个私有工具</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--tight">
+    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <a class="btn btn--ghost" href="reliability.html">← 韧性</a>
+      <a class="btn" href="solo.html">一台设备：只有一个我 <span class="btn__arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__in">
+      <div>
+        <div class="foot__mark">recollect</div>
+        <p>面向 agent 的通用长期记忆服务。原始记录是事实源，记忆是索引。</p>
+      </div>
+      <div>
+        <div class="foot__col-title">页面</div>
+        <div class="foot__links">
+          <a href="companion.html">陪伴型</a>
+          <a href="engineering.html">工程型</a>
+          <a href="architecture.html">架构与身份</a>
+          <a href="memory.html">记忆模型</a>
+          <a href="pipeline.html">抽取流水线</a>
+          <a href="reliability.html">韧性</a>
+          <a href="evidence.html">证据</a>
+          <a href="solo.html">一台设备</a>
+        </div>
+      </div>
+      <div class="foot__note">
+        页面内容取自项目设计稿与实现。
+        页面里的动态数字仅作示范，用来说明状态怎么变，不代表线上读数。
+        <div class="foot__repo">
+          <a href="https://github.com/lingxinsuixing/recollect" target="_blank" rel="noopener">GitHub · lingxinsuixing/recollect <span aria-hidden="true">↗</span></a>
+          <span>作者 / 维护者：lingxinsuixing</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot__bottom">
+      <span>recollect · schema v6 · 2026</span>
+      <span>designed for agents, readable by humans</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

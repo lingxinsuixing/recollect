@@ -1,0 +1,12 @@
+{
+  "id": "msg_000000000000000000000000",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-shaped-local",
+  "content": [
+    { "type": "thinking", "thinking": "hidden chain of thought", "signature": "" },
+    { "type": "text", "text": "{\"rows\":[]}" }
+  ],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 40, "output_tokens": 8 }
+}

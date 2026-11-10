@@ -1,0 +1,25 @@
+[package]
+name = "eval"
+version.workspace = true
+edition.workspace = true
+
+# bin 名是运维面看得见的那一个；包名 `eval` 只给 `cargo -p eval` 与集成测试目录用。
+[[bin]]
+name = "recollect-eval"
+path = "src/main.rs"
+
+# 尺子是**独立成员**，bin 名是运维面看得见的那个（`recollect-eval`）。
+# 依赖清单就是派发档 §二 的逐字落点：五个读路径 crate + 两个序列化 crate；
+# 这里**没有** `rc-distill`、没有任何网络/LLM crate——`extract` 是对既有库的度量，
+# 不跑抽取管线（批 C1 不烧一次模型调用）。
+[dependencies]
+rc-store = { path = "../crates/rc-store" }
+rc-memory = { path = "../crates/rc-memory" }
+rc-index = { path = "../crates/rc-index" }
+rc-search = { path = "../crates/rc-search" }
+rc-agent = { path = "../crates/rc-agent" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

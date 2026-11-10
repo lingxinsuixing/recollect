@@ -1,0 +1,15 @@
+error[E0308]: mismatched types
+ --> tests/compile_fail/handle_not_interchangeable.rs:5:22
+  |
+5 |     needs_transcript(root.ledger());
+  |     ---------------- ^^^^^^^^^^^^^ expected `&TranscriptHandle`, found `&LedgerHandle`
+  |     |
+  |     arguments to this function are incorrect
+  |
+  = note: expected reference `&TranscriptHandle`
+             found reference `&LedgerHandle`
+note: function defined here
+ --> tests/compile_fail/handle_not_interchangeable.rs:2:4
+  |
+2 | fn needs_transcript(_h: &rc_store::TranscriptHandle) {}
+  |    ^^^^^^^^^^^^^^^^ -------------------------------

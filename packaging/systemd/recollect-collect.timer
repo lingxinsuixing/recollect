@@ -1,0 +1,12 @@
+[Unit]
+Description=Run recollect collector every 30 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=30min
+RandomizedDelaySec=60s
+AccuracySec=30s
+Unit=recollect-collect.service
+
+[Install]
+WantedBy=timers.target

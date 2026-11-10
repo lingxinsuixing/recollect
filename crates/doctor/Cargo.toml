@@ -1,0 +1,30 @@
+[package]
+name = "doctor"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "recollect-doctor"
+path = "src/main.rs"
+
+# 依赖声明就是守卫的那一半：诊断面不解析**外部输入的内容**（正文、JSON 契约），所以这里没有
+# rc-agent/rc-distill；读数全走 rc-store / rc-ledger 的函数，所以这里也没有 rusqlite。
+# `rc-contract` 是 §4.8 ④ 那一格带进来的，用途只有一件事：`safe_token(&d) == d` 的**形状**对撞
+# （机器主语要与 `hub`/`mcp` 过同一套规则，见 main.rs 的那段注释）。它不给 doctor 开解析面：
+# doctor 依然不读正文、不出网（判据 17（N2）钉的就是这棵正式树里没有 rc-llm-http）。
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+rc-ledger = { path = "../rc-ledger" }
+rc-memory = { path = "../rc-memory" }
+rc-llm = { path = "../rc-llm" }
+rc-diag = { path = "../rc-diag" }
+clap = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+serde_json = { workspace = true }
+rc-index = { path = "../rc-index" }
+# 没有 hub：cargo 只给**本包**的 bin 定义 CARGO_BIN_EXE_*，而 hub 是个无 lib 的 bin 包，
+# 写成依赖会被直接忽略并警告。测试按邻居产物找它，见 tests/capabilities.rs。

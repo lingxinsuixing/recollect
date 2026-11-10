@@ -1,0 +1,7 @@
+error[E0432]: unresolved import `rc_derive`
+ --> tests/compile_fail/maintenance_derive_invisible.rs:3:5
+  |
+3 | use rc_derive as _;
+  |     ---------^^^^^
+  |     |
+  |     no external crate `rc_derive`
