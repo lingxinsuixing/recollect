@@ -1,0 +1,16 @@
+error[E0061]: this method takes 3 arguments but 4 arguments were supplied
+  --> tests/compile_fail/sink_cannot_choose_role.rs:13:15
+   |
+13 |     let _ = s.append_agent_turn("sess", "正文", "human", 0);
+   |               ^^^^^^^^^^^^^^^^^                 ------- unexpected argument #3 of type `&'static str`
+   |
+note: method defined here
+  --> src/sinks.rs
+   |
+   |     fn append_agent_turn(
+   |        ^^^^^^^^^^^^^^^^^
+help: remove the extra argument
+   |
+13 -     let _ = s.append_agent_turn("sess", "正文", "human", 0);
+13 +     let _ = s.append_agent_turn("sess", "正文", 0);
+   |

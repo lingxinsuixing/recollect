@@ -1,0 +1,13 @@
+[package]
+name = "rc-llm-cfg"
+version.workspace = true
+edition.workspace = true
+
+# `rc-contract` 而不是 `rc-llm-http`：配置面不许把 `ureq` 拖进 `doctor` 的树（判据 N2）。
+[dependencies]
+toml = { workspace = true }
+rc-contract = { path = "../rc-contract" }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+serde_json = { workspace = true }

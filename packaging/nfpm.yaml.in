@@ -1,0 +1,63 @@
+# nfpm 模板：scripts/package-native.sh 用 sed 替换 @VERSION@ / @MAINTAINER@ /
+# @HOMEPAGE@ / @LICENSE@ 后交给 WSL 里的 nfpm。二进制来自 dist/linux-x86_64（musl 静态）。
+name: recollect
+arch: amd64
+platform: linux
+version: "@VERSION@"
+section: utils
+priority: optional
+maintainer: "@MAINTAINER@"
+description: |
+  Cross-agent memory service: a centre transcript and memory store, edge replicas,
+  and MCP tools for recall, transcript search and per-turn retrieval.
+vendor: recollect
+homepage: "@HOMEPAGE@"
+license: "@LICENSE@"
+
+contents:
+  - src: dist/linux-x86_64/recollect-hub
+    dst: /usr/lib/recollect/recollect-hub
+    file_info:
+      mode: 0755
+  - src: dist/linux-x86_64/recollect-node
+    dst: /usr/lib/recollect/recollect-node
+    file_info:
+      mode: 0755
+  - src: dist/linux-x86_64/recollect-mcp
+    dst: /usr/lib/recollect/recollect-mcp
+    file_info:
+      mode: 0755
+  - src: dist/linux-x86_64/recollect-hook
+    dst: /usr/lib/recollect/recollect-hook
+    file_info:
+      mode: 0755
+  - src: dist/linux-x86_64/recollect-doctor
+    dst: /usr/lib/recollect/recollect-doctor
+    file_info:
+      mode: 0755
+  - src: dist/linux-x86_64/recollect-core
+    dst: /usr/lib/recollect/recollect-core
+    file_info:
+      mode: 0755
+
+  - src: /usr/lib/recollect/recollect-hub
+    dst: /usr/bin/recollect-hub
+    type: symlink
+  - src: /usr/lib/recollect/recollect-node
+    dst: /usr/bin/recollect-node
+    type: symlink
+  - src: /usr/lib/recollect/recollect-mcp
+    dst: /usr/bin/recollect-mcp
+    type: symlink
+  - src: /usr/lib/recollect/recollect-hook
+    dst: /usr/bin/recollect-hook
+    type: symlink
+  - src: /usr/lib/recollect/recollect-doctor
+    dst: /usr/bin/recollect-doctor
+    type: symlink
+  - src: /usr/lib/recollect/recollect-core
+    dst: /usr/bin/recollect-core
+    type: symlink
+
+# 不建服务、不建数据目录：桌面场景由 agent 拉起 MCP，中心才需要常驻；
+# 数据目录由操作员用 --data-dir 指定，卸载不删。

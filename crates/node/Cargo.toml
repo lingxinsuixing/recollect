@@ -1,0 +1,36 @@
+[package]
+name = "node"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "recollect-node"
+path = "src/main.rs"
+
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+rc-ledger = { path = "../rc-ledger" }
+rc-net = { path = "../rc-net" }
+rc-index = { path = "../rc-index" }
+# B2a-3 的读箱前置：`secret_ref` 的形状来自 rc-llm-cfg（值的位置），值本身只从 rc-secret
+# 的密文箱读；`Zeroizing` 与箱里那一层同一份零化纪律。本批只有 `llm_key` 模块用它们，
+# B2b 的离线自蒸才是第一个生产读者。
+rc-llm-cfg = { path = "../rc-llm-cfg" }
+rc-secret = { path = "../rc-secret" }
+zeroize = { workspace = true }
+# B2b-2 的离线自蒸：与 hub 共用同一条 cycle 管线（`rc-cycle`）与同一个后端接口
+# （`rc-llm`），live 座位由 `rc-llm-http` 构造。`rc-llm-cfg` 已在上面（读 `llm.toml`）。
+rc-llm = { path = "../rc-llm" }
+rc-llm-http = { path = "../rc-llm-http" }
+rc-cycle = { path = "../rc-cycle" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+clap = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+serde_json = { workspace = true }
+trybuild = { workspace = true }
+rc-memory = { path = "../rc-memory" }

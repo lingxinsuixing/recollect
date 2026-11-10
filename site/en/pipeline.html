@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extraction pipeline — recollect</title>
+<link rel="canonical" href="https://lingxinsuixing.github.io/recollect/pipeline.html">
+<meta name="description" content="13-stage extraction pipeline: code locates, the model judges meaning; code checks first, then an independent model review; writing zero rows is an error.">
+<meta name="theme-color" content="#0a0805">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Extraction pipeline — recollect">
+<meta property="og:description" content="Thirteen stages of extraction: code locates, the model judges meaning; code checks first, then an independent model review.">
+<meta property="og:image" content="https://lingxinsuixing.github.io/recollect/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<script>(function(){var m=location.search.match(/[?&]theme=([a-z-]+)/),t=m?m[1]:"gold";document.documentElement.dataset.theme=(t==="default"||t==="cold")?"":t;})();</script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060607'/%3E%3Crect x='10' y='10' width='12' height='12' transform='rotate(45 16 16)' fill='none' stroke='%23c8a468' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/theme-gold.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  .railwrap { border: 1px solid var(--line); background: rgba(8,8,10,.5); padding: clamp(16px, 2.4vw, 26px); }
+  .rail-swipe { display: none; color: var(--brass-2); }
+  @media (max-width: 1000px) { .rail-swipe { display: inline; } }
+  .rail {
+    display: grid; grid-template-columns: repeat(13, minmax(0, 1fr));
+    gap: 0; position: relative; padding-top: 34px;
+  }
+  .rail::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 40px; height: 1px;
+    background: var(--line);
+  }
+  .rail__pulse {
+    position: absolute; top: 32px; left: 0; width: 17px; height: 17px; margin-left: -8px;
+    border: 1px solid rgba(200,164,104,.6); transform: rotate(45deg);
+    transition: left .7s var(--ease-out), background .3s;
+    background: rgba(200,164,104,.10); z-index: 0;
+    box-shadow: 0 0 0 4px rgba(200,164,104,.05);
+  }
+  .rail__pulse.is-hidden { opacity: 0; }
+  .stage {
+    position: relative; padding: 22px 2px 0; text-align: center; z-index: 1;
+  }
+  .stage::before {
+    content: ""; position: absolute; top: 4px; left: 50%; margin-left: -3.5px; width: 7px; height: 7px;
+    border: 1px solid var(--line-3); background: var(--ink-0); transform: rotate(45deg);
+    transition: all .35s;
+  }
+  .stage:hover::before { transform: rotate(45deg) scale(1.35); border-color: var(--brass); }
+  .stage[data-type="P"]::before { border-color: rgba(138,161,191,.55); }
+  .stage[data-type="L"]::before { border-color: rgba(200,164,104,.55); }
+  .stage[data-type="M"]::before { border-color: rgba(134,163,126,.55); }
+  .stage.is-active::before { background: var(--brass); border-color: var(--brass); box-shadow: 0 0 0 4px rgba(200,164,104,.12); }
+  .stage.is-done::before { background: var(--muted-2); border-color: var(--muted-2); }
+  .stage__n { display: block; font-family: var(--font-mono); font-size: 8px; letter-spacing: .1em; color: var(--muted-2); }
+  .stage__t {
+    display: block; margin-top: 5px; font-size: 10.5px; line-height: 1.3; color: var(--muted);
+    transition: color .3s; white-space: nowrap;
+  }
+  .stage.is-active .stage__t { color: var(--bone); }
+  .stage:hover .stage__t { color: var(--bone-2); }
+
+  .stagepanel {
+    margin-top: 28px; border-top: 1px solid var(--line-2); padding-top: 24px;
+    display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: clamp(18px, 3vw, 40px);
+  }
+  .stagepanel__title { font-family: var(--font-display); font-weight: 300; font-size: clamp(22px, 2.4vw, 30px); margin-top: 10px; }
+  .stagepanel__desc { margin-top: 12px; font-size: 13.5px; line-height: 1.85; color: var(--body-dim); }
+  .stagepanel__h { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); margin-bottom: 10px; }
+  .stagepanel__io { font-family: var(--font-mono); font-size: 11.5px; line-height: 1.9; color: var(--muted); border-left: 1px solid var(--line); padding-left: 14px; white-space: pre-wrap; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .ctl {
+    display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid var(--line);
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    transition: all .3s;
+  }
+  .ctl:hover { border-color: var(--line-3); color: var(--bone); }
+  .ctl.is-on { border-color: rgba(200,164,104,.5); color: var(--brass); background: rgba(200,164,104,.07); }
+
+  .split { display: grid; grid-template-columns: 1fr 150px 1fr; border-top: 2px solid var(--line-3); border-bottom: 1px solid var(--line-2); }
+  .split__side { padding: 28px 0 32px; transition: opacity .5s; }
+  .split__side.is-off { opacity: .2; }
+  .split__side:first-child { padding-right: 26px; border-right: 1px solid var(--line-2); }
+  .split__side:last-child { padding-left: 26px; }
+  .split__h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .split__h span { font-family: var(--font-display); font-weight: 300; font-size: clamp(22px, 2.2vw, 28px); }
+  .split__h small { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; color: var(--muted-2); }
+  .split__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+  .split__chips span { border: 1px solid var(--line); padding: 5px 10px; font-size: 12.5px; color: var(--body-dim); }
+  .split__n { margin-top: 18px; font-size: 12.5px; line-height: 1.8; color: var(--muted); max-width: 34ch; }
+  .split__mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px 8px; border-left: 1px dashed var(--line-3); border-right: 1px dashed var(--line-3); }
+  .split__mid span { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); }
+  .split__mid b { font-family: var(--font-mono); font-size: 11px; line-height: 1.5; color: var(--brass-2); text-align: center; }
+
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 18px; }
+  .mode { background: var(--ink-0); padding: 20px 22px; }
+  .mode--llm { background: linear-gradient(180deg, rgba(200,164,104,.06), rgba(200,164,104,.012)); }
+  .mode__k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+  .mode h3 { margin-top: 8px; font-family: var(--font-display); font-weight: 300; font-size: 20px; }
+  .mode p { margin-top: 8px; font-size: 13px; line-height: 1.8; color: var(--muted); }
+  @media (max-width: 640px) { .modes { grid-template-columns: 1fr; } }
+
+  .verdict {
+    margin-top: 26px; padding: 16px 18px; border: 1px solid var(--line);
+    border-left: 2px solid var(--brass); font-size: 13.5px; line-height: 1.8; color: var(--bone-2);
+    min-height: 64px;
+  }
+  .verdict b { color: var(--brass-2); font-weight: 400; }
+
+  .gatecard { border: 1px solid var(--line); background: rgba(10,10,12,.6); position: relative; overflow: hidden; }
+  .gatecard.is-checking::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(200,164,104,.12), transparent);
+    transform: translateY(-100%);
+    animation: scan 1.2s var(--ease) infinite;
+  }
+  @keyframes scan { to { transform: translateY(100%); } }
+  .gatecard__row { display: grid; grid-template-columns: 88px 1fr; gap: 14px; padding: 11px 16px; border-bottom: 1px solid var(--line-2); font-size: 13px; }
+  .gatecard__k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); padding-top: 3px; }
+  .gatecard__v { color: var(--bone-2); line-height: 1.7; }
+  .issues { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; min-height: 108px; }
+  .issues__hint { margin: 0; font-size: 12.5px; line-height: 1.85; color: var(--muted-2); max-width: 46ch; }
+  .issue {
+    display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid rgba(196,99,67,.28);
+    background: rgba(196,99,67,.06); opacity: 0; transform: translateY(6px);
+    transition: opacity .5s var(--ease-out), transform .5s var(--ease-out);
+  }
+  .issue.is-in { opacity: 1; transform: none; }
+  .issue__t { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--rust); padding-top: 3px; white-space: nowrap; }
+  .issue__m { font-size: 13px; color: var(--bone-2); line-height: 1.7; }
+  .issue__m code { font-family: var(--font-mono); font-size: 11.5px; color: var(--rust); }
+  .verdictbar {
+    margin-top: 18px; padding: 14px 16px; border: 1px solid var(--line); display: flex;
+    justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .verdictbar.is-reject { border-color: rgba(196,99,67,.4); color: var(--rust); background: rgba(196,99,67,.05); animation: rejectShake .45s var(--ease-out); }
+  .verdictbar.is-pass { border-color: rgba(134,163,126,.4); color: var(--sage); background: rgba(134,163,126,.05); }
+  @keyframes rejectShake {
+    0%, 100% { transform: none; }
+    25% { transform: translateX(-3px); }
+    55% { transform: translateX(3px); }
+    80% { transform: translateX(-1px); }
+  }
+
+  .contract { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.95; color: var(--muted); white-space: pre; overflow-x: auto; }
+  .contract .key { color: var(--slate); }
+  .contract .str { color: var(--brass-2); }
+  .contract .num { color: var(--sage); }
+  .contract .c { color: var(--muted-2); }
+
+  .pullquote {
+    border-left: 1px solid var(--brass); padding: 6px 0 6px 22px; margin-top: 30px;
+    font-family: var(--font-display); font-weight: 300; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.5;
+  }
+
+  @media (max-width: 1000px) {
+    .railwrap { overflow-x: auto; }
+    .rail { min-width: 900px; }
+    .stagepanel { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .split__side:first-child { padding-right: 0; border-right: 0; border-bottom: 1px solid var(--line-2); }
+    .split__side:last-child { padding-left: 0; }
+    .split__mid { border-left: 0; border-right: 0; border-top: 1px dashed var(--line-3); border-bottom: 1px dashed var(--line-3); flex-direction: row; gap: 12px; }
+    .split__mid b { text-align: left; }
+    .split__mid b br { display: none; }
+    .gatecard__row { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" data-progress></div>
+<div class="plate-layer plate-layer--ambient" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__brand" href="index.html" aria-label="recollect home">
+    <span class="nav__mark" aria-hidden="true"></span>
+    <span class="nav__word">recollect</span>
+    <span class="nav__sub">agent-native memory</span>
+  </a>
+  <nav class="nav__links" aria-label="Main navigation">
+    <a href="index.html" data-nav-link>Overview</a>
+    <a href="companion.html" data-nav-link>Companion</a>
+    <a href="engineering.html" data-nav-link>Engineering</a>
+    <a href="architecture.html" data-nav-link>Architecture</a>
+    <a href="memory.html" data-nav-link>Memory model</a>
+    <a href="pipeline.html" data-nav-link>Extraction</a>
+    <a href="reliability.html" data-nav-link>Reliability</a>
+    <a href="evidence.html" data-nav-link>Evidence</a>
+    <a href="solo.html" data-nav-link>Single device</a>
+  </nav>
+  <div class="nav__meta">
+    <a class="nav__lang" href="../pipeline.html" aria-label="切换到中文" hreflang="zh-CN">中文</a>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="nav__meta-text">schema v6</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="pagehead">
+    <div class="pagehead__bg" aria-hidden="true"></div>
+    <div class="plate-layer plate-layer--page" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="pagehead__kicker">03 / extraction</div>
+      <h1 class="pagehead__title display">Thirteen stages,<br>two kinds of executor</h1>
+      <p class="pagehead__lede">
+        Code handles everything that can be settled mechanically: ordinals, timestamps, who spoke, tool calls, who was mentioned, dedupe, provenance. The model makes semantic judgements only, one at a time, and its output carries only <span class="code">seq</span> and a verbatim quote — no id, no timestamp, no pointer, and no "how sure I am".
+      </p>
+      <div class="pagehead__meta">
+        <span class="chip chip--slate">Code P1–P17</span>
+        <span class="chip chip--brass">LLM L1–L12</span>
+        <span class="chip chip--rust">Code checks + model review</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 导入之后 ============ -->
+  <section class="sec sec--tight">
+    <div class="wrap">
+      <div class="flow" data-reveal>
+        <div class="flow__s">
+          <div class="flow__n">01 / Import</div>
+          <div class="flow__t">Bring the words in first</div>
+          <p class="flow__d">The converter writes sessions into one format; unknown fields are rejected and secrets are scanned first.</p>
+        </div>
+        <div class="flow__s">
+          <div class="flow__n">02 / Distillation</div>
+          <div class="flow__t">Cut into small batches</div>
+          <p class="flow__d">One batch per pass, and it can be re-run; a failed batch stops there and the next run resumes from the break.</p>
+        </div>
+        <div class="flow__s">
+          <div class="flow__n">03 / Extraction</div>
+          <div class="flow__t">Code locates, model judges</div>
+          <p class="flow__d">Code supplies ordinals, timestamps and speakers; the model only judges meaning. Whatever code can check is checked first, and model review comes after.</p>
+        </div>
+        <div class="flow__s">
+          <div class="flow__n">04 / Use</div>
+          <div class="flow__t">Take out what is needed</div>
+          <p class="flow__d">Recall gives a one-sentence brief, search gives the raw words, a session gives context; all of them expand the source text by the handle at the start of the line.</p>
+        </div>
+      </div>
+
+      <div class="modes" data-reveal>
+        <div class="mode">
+          <div class="mode__k">No LLM</div>
+          <h3>Searchable once ingested</h3>
+          <p>Every turn is written into the full-text index at import: session lists, raw-word search and replay all return results without calling a model.</p>
+        </div>
+        <div class="mode mode--llm">
+          <div class="mode__k">With an LLM</div>
+          <h3>Only then does extraction run</h3>
+          <p>Memory cards, review and the always-on brief wait for the model; without it no raw text is lost, and it is filled in when the model comes back.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 流水线 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">01</div>
+        <div>
+          <h2 class="sec-title">Click a stage, or let it run on its own</h2>
+          <p class="sec-lede">Each diamond is one step: brass goes to the model, steel blue runs in code; wherever the two colours alternate, there is a handoff.</p>
+        </div>
+      </div>
+
+      <div class="railwrap" data-reveal>
+        <div class="demo__bar" style="border-bottom:0;padding:0 0 14px">
+          <span class="demo__label">extraction pipeline</span>
+          <div class="controls">
+            <button class="ctl is-on" data-play aria-pressed="true">⏸ Pause</button>
+            <button class="ctl" data-step="prev">← Previous</button>
+            <button class="ctl" data-step="next">Next →</button>
+          </div>
+        </div>
+
+        <div class="rail" data-rail>
+          <div class="rail__pulse" data-pulse aria-hidden="true"></div>
+
+          <button class="stage" data-type="P" data-stage="0"><span class="stage__n">P1</span><span class="stage__t">ingest</span></button>
+          <button class="stage" data-type="P" data-stage="1"><span class="stage__n">P2</span><span class="stage__t">sanitize</span></button>
+          <button class="stage" data-type="P" data-stage="2"><span class="stage__n">P3</span><span class="stage__t">locate</span></button>
+          <button class="stage" data-type="P" data-stage="3"><span class="stage__n">P4</span><span class="stage__t">candidates</span></button>
+          <button class="stage" data-type="L" data-stage="4"><span class="stage__n">L1</span><span class="stage__t">naming</span></button>
+          <button class="stage" data-type="P" data-stage="5"><span class="stage__n">P5</span><span class="stage__t">expand</span></button>
+          <button class="stage" data-type="L" data-stage="6"><span class="stage__n">L2</span><span class="stage__t">disambiguate</span></button>
+          <button class="stage" data-type="L" data-stage="7"><span class="stage__n">L3</span><span class="stage__t">facts</span></button>
+          <button class="stage" data-type="L" data-stage="8"><span class="stage__n">L4</span><span class="stage__t">events</span></button>
+          <button class="stage" data-type="P" data-stage="9"><span class="stage__n">P6</span><span class="stage__t">validate</span></button>
+          <button class="stage" data-type="L" data-stage="10"><span class="stage__n">L5</span><span class="stage__t">review</span></button>
+          <button class="stage" data-type="P" data-stage="11"><span class="stage__n">P7</span><span class="stage__t">commit</span></button>
+          <button class="stage" data-type="P" data-stage="12"><span class="stage__n">P8</span><span class="stage__t">metrics</span></button>
+        </div>
+
+        <p class="dim" style="font-size:12px;line-height:1.7;margin:14px 0 0">
+          This draws the main trunk of 13 stages; the full numbering is P1–P17 in code and L1–L12 in the model, and the extra ones are subdivisions and wrap-ups of the same stages. <span class="rail-swipe">On phones, swipe sideways to see all 13 stages.</span>
+        </p>
+
+        <div class="stagepanel" aria-live="polite">
+          <div>
+            <span class="chip" data-sp-type>program</span>
+            <div class="stagepanel__title" data-sp-title>ingest</div>
+            <p class="stagepanel__desc" data-sp-desc>Translates the agent's own session format into one unified format; unknown fields and scanned secrets are rejected outright.</p>
+          </div>
+          <div>
+            <div class="stagepanel__h">Input</div>
+            <div class="stagepanel__io" data-sp-in>session.json (agent-private format) → converter</div>
+          </div>
+          <div>
+            <div class="stagepanel__h">Output</div>
+            <div class="stagepanel__io" data-sp-out>events[] · each with seq / speaker_id / ts_ms / text</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 分工 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">02</div>
+        <div>
+          <h2 class="sec-title">Hard-code who does what</h2>
+          <p class="sec-lede">Switch between three views to see where the flow breaks when only one side is left. This is not an animation; it is the real trade-off this system makes.</p>
+        </div>
+      </div>
+
+      <div class="controls" data-reveal style="margin-bottom:28px">
+        <button class="ctl is-on" data-duty="both">Both</button>
+        <button class="ctl" data-duty="p">Code only</button>
+        <button class="ctl" data-duty="l">LLM only</button>
+      </div>
+
+      <div class="split" data-reveal>
+        <div class="split__side" data-dutycol="p">
+          <div class="split__h"><span>Code</span><small>P1–P17</small></div>
+          <div class="split__chips">
+            <span>Sanitize</span><span>Locate</span><span>Time</span><span>Speaker</span>
+            <span>Candidate filter</span><span>Dedupe</span><span>Provenance</span><span>Validate</span>
+            <span>Write</span><span>Ledger</span><span>Metrics</span>
+          </div>
+          <p class="split__n">It does not judge meaning; it only produces the exact position and provenance.</p>
+        </div>
+
+        <div class="split__mid" aria-hidden="true">
+          <span>Handoff only</span>
+          <b>seq<br>verbatim quote</b>
+        </div>
+
+        <div class="split__side" data-dutycol="l">
+          <div class="split__h"><span>Model</span><small>L1–L12</small></div>
+          <div class="split__chips">
+            <span>Naming</span><span>Alias</span><span>Reference</span><span>Disambiguation</span>
+            <span>Tone and role</span><span>Fact</span><span>Event</span><span>Relation</span>
+            <span>State</span><span>Time mapping</span><span>Review</span><span>Causality</span>
+          </div>
+          <p class="split__n">It never touches position; within the given turn it only judges what this sentence means.</p>
+        </div>
+      </div>
+
+      <div class="verdict" data-verdict>
+        <b>Both sides:</b> Code produces the exact position and provenance; the model makes one semantic judgement on that track. Every output can be traced back to <span class="code">seq</span> and a verbatim quote.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 审核闸 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">03</div>
+        <div>
+          <h2 class="sec-title">Code checks first, then the model reviews</h2>
+          <p class="sec-lede">
+            What code can decide never goes to the model; model review runs as a separate pass that only flags problems and never rewrites the draft. Below is a draft that will be sent back — click "Run review" to see which layers it breaks into.
+          </p>
+        </div>
+      </div>
+
+      <div class="dirs" data-reveal style="grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)">
+        <div class="gatecard">
+          <div class="gatecard__row"><span class="gatecard__k">draft</span><span class="gatecard__v">"Xiao Wang changed the deploy script to build-release.sh last week, because the Raspberry Pi would not start."</span></div>
+          <div class="gatecard__row"><span class="gatecard__k">subject</span><span class="gatecard__v">Xiao Wang</span></div>
+          <div class="gatecard__row"><span class="gatecard__k">time_text</span><span class="gatecard__v">last week</span></div>
+          <div class="gatecard__row"><span class="gatecard__k">value</span><span class="gatecard__v">build-release.sh</span></div>
+          <div class="gatecard__row"><span class="gatecard__k">evidence</span><span class="gatecard__v"><span class="code">seq 12</span> · "Swapped the release script for build-release.sh; the Raspberry Pi side will not come up."</span></div>
+        </div>
+
+        <div>
+          <div class="controls" style="margin-bottom:10px">
+            <button class="btn btn--ghost" data-run-gate>Run review</button>
+            <button class="ctl" data-reset-gate>Reset</button>
+          </div>
+          <div class="issues" data-issues><p class="issues__hint" data-issues-hint>After it runs, each issue is listed by layer: code check / model review. The draft itself is never rewritten.</p></div>
+          <div class="verdictbar" data-gatebar>
+            <span data-gate-status>Waiting to run</span>
+            <span data-gate-count>0 issue</span>
+          </div>
+        </div>
+      </div>
+
+      <blockquote class="pullquote" data-reveal>
+        Criteria may not use an <span class="serif-q">ok</span> field; tests assert on row counts,<br>
+        and writing zero rows is an error.
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ============ 04 输出形状 ============ -->
+  <section class="sec sec--tight">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">04</div>
+        <div>
+          <h2 class="sec-title">How small can one output be</h2>
+          <p class="sec-lede">The model produces only "which turn + which quote + what was extracted". Every other field is assembled by code, so the model has nothing to invent.</p>
+        </div>
+      </div>
+
+      <div class="panel" data-reveal>
+        <div class="panel__head"><span class="panel__title">llm output contract · v4</span><span class="chip chip--brass">frozen</span></div>
+        <div class="panel__body">
+          <div class="contract"><span class="c">// only these fields; no id, timestamp, source position, code, logs or confidence score</span>
+<span class="punc">{</span>
+  <span class="key">"seq"</span>: <span class="num">12</span>,
+  <span class="key">"quote"</span>: <span class="str">"Swapped the release script for build-release.sh; the Raspberry Pi side will not come up."</span>,
+  <span class="key">"facts"</span>: [
+    <span class="punc">{</span> <span class="key">"subject"</span>: <span class="str">"deploy script"</span>, <span class="key">"predicate"</span>: <span class="str">"single entry point"</span>, <span class="key">"value"</span>: <span class="str">"build-release.sh"</span> <span class="punc">}</span>
+  ]
+<span class="punc">}</span>
+
+<span class="c">// no content returns an empty array — no guessing, no padding, no "none"</span>
+<span class="punc">{</span> <span class="key">"seq"</span>: <span class="num">13</span>, <span class="key">"quote"</span>: <span class="str">""</span>, <span class="key">"facts"</span>: <span class="punc">[]</span> <span class="punc">}</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--tight">
+    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <a class="btn btn--ghost" href="memory.html">← Memory model</a>
+      <a class="btn" href="reliability.html">What happens when the network is down <span class="btn__arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__in">
+      <div>
+        <div class="foot__mark">recollect</div>
+        <p>A general long-term memory service for agents. Raw records are the source of truth; memory is the index.</p>
+      </div>
+      <div>
+        <div class="foot__col-title">Pages</div>
+        <div class="foot__links">
+          <a href="companion.html">Companion</a>
+          <a href="engineering.html">Engineering</a>
+          <a href="architecture.html">Architecture and identity</a>
+          <a href="memory.html">Memory model</a>
+          <a href="pipeline.html">Extraction pipeline</a>
+          <a href="reliability.html">Reliability</a>
+          <a href="evidence.html">Evidence</a>
+          <a href="solo.html">Single device</a>
+        </div>
+      </div>
+      <div class="foot__note">
+        Page content is drawn from the design documents and implementation. Dynamic numbers illustrate how state changes; they are not live readings.
+        <div class="foot__repo">
+          <a href="https://github.com/lingxinsuixing/recollect" target="_blank" rel="noopener">GitHub · lingxinsuixing/recollect <span aria-hidden="true">↗</span></a>
+          <span>Author / maintainer: lingxinsuixing</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot__bottom">
+      <span>recollect · schema v6 · 2026</span>
+      <span>designed for agents, readable by humans</span>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/en/site.js"></script>
+<script src="../assets/en/pipeline.js"></script>
+</body>
+</html>

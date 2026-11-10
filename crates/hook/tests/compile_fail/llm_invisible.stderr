@@ -1,0 +1,7 @@
+error[E0432]: unresolved import `rc_llm`
+ --> tests/compile_fail/llm_invisible.rs:4:5
+  |
+4 | use rc_llm::Extractor;
+  |     ^^^^^^ use of unresolved module or unlinked crate `rc_llm`
+  |
+  = help: if you wanted to use a crate named `rc_llm`, use `cargo add rc_llm` to add it to your `Cargo.toml`

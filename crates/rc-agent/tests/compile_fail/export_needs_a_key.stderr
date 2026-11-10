@@ -1,0 +1,10 @@
+error[E0624]: associated function `from_markdown` is private
+ --> tests/compile_fail/export_needs_a_key.rs:6:26
+  |
+6 |     let doc = ExportDoc::from_markdown("任何字符串都能变成导出件".to_string());
+  |                          ^^^^^^^^^^^^^ private associated function
+  |
+ ::: src/lib.rs
+  |
+  |     pub(crate) fn from_markdown(s: String) -> Self {
+  |     ---------------------------------------------- private associated function defined here

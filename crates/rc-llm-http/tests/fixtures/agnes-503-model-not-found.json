@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "model_not_found",
+    "message": "分组 default 下模型 <slug> 无可用渠道（distributor） (request id: 00000000000000000000000000000000)",
+    "type": "provider_error"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "comment": "在第二台机器（不同 target）上重跑 cargo test -p rc-contract --test golden，必须全绿。跨 target 逐字节相同是验收项（架构 §5）。",
+  "cases": [
+    {
+      "name": "plain_ascii",
+      "device_id": "dev-synthetic-1",
+      "session_key": "ses-synthetic-A",
+      "role": "human",
+      "body_raw": "hello  world\r\n",
+      "created_at_ms": 1730000000000,
+      "expect_body": "hello  world",
+      "expect_body_fp": "e519e9540ff8a84d732c6f6e8db424d9abf4125078130221763fa573067a9059",
+      "expect_turn_uid": "c6cff58b6452384d8dbc182819ad8e863c9db07cd99d1abb8bf76c10cc842b7c"
+    },
+    {
+      "name": "cjk_with_inner_spaces",
+      "device_id": "dev-synthetic-1",
+      "session_key": "ses-synthetic-A",
+      "role": "agent",
+      "body_raw": "  先跑测试  再合并  ",
+      "created_at_ms": 1730000000001,
+      "expect_body": "先跑测试  再合并",
+      "expect_body_fp": "f37c8a8ae2baf479b472729afba76e58b4161b838be94f8a4aab85c465ef1c49",
+      "expect_turn_uid": "8f31bd01322f347e16ed415674fa95c7aa303105702ac91f100c533512ed5bec"
+    },
+    {
+      "name": "nfc_accent",
+      "device_id": "dev-synthetic-2",
+      "session_key": "ses-synthetic-B",
+      "role": "system",
+      "body_raw": "e\u0301",
+      "created_at_ms": 1730000000002,
+      "expect_body": "é",
+      "expect_body_fp": "4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c",
+      "expect_turn_uid": "22cb1c36ae62d758c6896b2caec282b114392fede296e1163c01fc0beed255f6"
+    }
+  ]
+}

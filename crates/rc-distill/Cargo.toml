@@ -1,0 +1,24 @@
+[package]
+name = "rc-distill"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+rc-ledger = { path = "../rc-ledger" }
+rc-memory = { path = "../rc-memory" }
+rc-derive = { path = "../rc-derive" }
+rc-index = { path = "../rc-index" }   # 生产依赖：判同的候选要过全系统那一把切词/算分的尺子（§2.15 第 1 条，八条边里最后一条）——只借 analyzer 与 score_row，不碰 rank
+rc-llm = { path = "../rc-llm" }
+rc-agent = { path = "../rc-agent" }   # 生产依赖：围栏文本的唯一真相在 rc_agent::surface::FENCE（§2.10），prepare.rs 直接读它
+rc-search = { path = "../rc-search" } # 生产依赖：块行上限的唯一真相在 rc_search::gate::MAX_FORM_LINES，同上，抄字面量=造第二个真相
+serde = { workspace = true }
+serde_json = { workspace = true }
+rusqlite = { workspace = true }   # extract.rs 生产码自己 use rusqlite（证据表事务 + h.conn() 裸读）；测试侧同一行覆盖
+thiserror = { workspace = true }   # ContractError 的 derive 里有 thiserror::Error，从这一版起就要
+sha2 = { workspace = true }        # I-12：裁决判定表的 prompt 指纹（adjudicate.rs::prompt_sha）——判定表只存指纹不存全文，全文可从同一库同一对重建
+
+[dev-dependencies]
+tempfile = { workspace = true }
+rc-llm-http = { path = "../rc-llm-http" }

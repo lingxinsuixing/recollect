@@ -1,0 +1,26 @@
+[package]
+name = "rc-agent"
+version.workspace = true
+edition.workspace = true
+
+# 依赖清单就是 brief 的「依赖」段的逐字落点。这里**没有** `rc-ledger`：否则 `hook → rc-agent`
+# 会把水位库带进读路径，守卫 6 从后门破掉。也没有 `rc-llm`、没有任何网络 crate、没有 `rusqlite`——
+# SQL 面住在下面四个 crate 各自的读数实现里，本 crate 只消费它们的结果（守卫 3）。
+# 本 crate 同时是**全仓唯一被允许产出正文的 crate**（守卫 12）：正文只能经
+# `InjectionBlock` / `ToolJson` / `ExportDoc` 三个载体出去，围栏与阶梯渲染的唯一家在 `surface`。
+[dependencies]
+rc-store = { path = "../rc-store" }
+rc-memory = { path = "../rc-memory" }
+rc-search = { path = "../rc-search" }
+rc-index = { path = "../rc-index" }
+rc-contract = { path = "../rc-contract" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+# Step 6 的两条编译失败用例（守卫 12 的两个方向：拆出去、凭空造）。与 rc-store 同一把尺子。
+trybuild = { workspace = true }
+# L0 文本的版本戳对拍（`tests/l0.rs` 读文件现算 sha256）。只在测试里用，不进生产依赖。
+sha2 = { workspace = true }

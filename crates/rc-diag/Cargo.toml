@@ -1,0 +1,18 @@
+[package]
+name = "rc-diag"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+rc-store = { path = "../rc-store" }
+rc-ledger = { path = "../rc-ledger" }
+rc-memory = { path = "../rc-memory" }
+rc-index = { path = "../rc-index" }
+rc-llm = { path = "../rc-llm" }
+rc-contract = { path = "../rc-contract" }
+node = { path = "../node" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

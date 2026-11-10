@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>架构与身份 — recollect</title>
+<link rel="canonical" href="https://lingxinsuixing.github.io/recollect/architecture.html">
+<meta name="description" content="recollect 的三栏架构：边缘节点、中心 hub、备份 standby；七个编号与实时 SHA-256 演示。">
+<meta name="theme-color" content="#0a0805">
+<meta property="og:type" content="website">
+<meta property="og:title" content="架构与身份 — recollect">
+<meta property="og:description" content="三栏架构：边缘节点、中心、备份；以及七个编号与身份公式。">
+<meta property="og:image" content="https://lingxinsuixing.github.io/recollect/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<script>(function(){var m=location.search.match(/[?&]theme=([a-z-]+)/),t=m?m[1]:"gold";document.documentElement.dataset.theme=(t==="default"||t==="cold")?"":t;})();</script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060607'/%3E%3Crect x='10' y='10' width='12' height='12' transform='rotate(45 16 16)' fill='none' stroke='%23c8a468' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/theme-gold.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  .lab { display: grid; grid-template-columns: minmax(0, 1fr) 336px; gap: clamp(20px, 2.6vw, 34px); align-items: start; }
+
+  .board {
+    position: relative;
+    border: 1px solid var(--line);
+    background: rgba(8, 8, 10, 0.5);
+    padding: clamp(18px, 2.4vw, 30px);
+    display: grid;
+    grid-template-columns: 1fr 1.05fr 0.9fr;
+    gap: clamp(14px, 2.6vw, 42px);
+    min-height: 520px;
+  }
+
+  .board__wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+  .board__wires path { fill: none; stroke: rgba(241, 237, 229, 0.26); stroke-width: 1; transition: stroke .4s; }
+  .board__wires path.is-dim { stroke: rgba(241, 237, 229, 0.05); }
+  .board__wires path.is-hot { stroke: rgba(200, 164, 104, 0.55); }
+  .board__wires path.dash { stroke-dasharray: 4 6; stroke: rgba(241, 237, 229, 0.18); }
+  .board__wires .flow { fill: var(--brass); }
+  .board__wires .flow.slate { fill: var(--slate); }
+  .board__wires .flow.sage { fill: var(--sage); }
+  .board__wires text { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.1em; fill: rgba(241, 237, 229, 0.30); }
+
+  .board__col { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
+  .board__head {
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted-2); padding-bottom: 10px; border-bottom: 1px solid var(--line-2); margin-bottom: 4px;
+  }
+  .board__head--brass { color: var(--brass); border-bottom-color: rgba(200, 164, 104, 0.3); }
+
+  .bnode {
+    display: block; width: 100%; text-align: left; position: relative;
+    padding: 13px 15px 14px 17px;
+    border: 1px solid var(--line);
+    background: rgba(241, 237, 229, 0.014);
+    transition: border-color .4s, background .4s, transform .4s var(--ease-out);
+  }
+  .bnode::before {
+    content: ""; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 2px;
+    background: var(--brass); opacity: 0; transform: scaleY(0); transform-origin: top;
+    transition: opacity .4s, transform .45s var(--ease-out);
+  }
+  .bnode:hover { border-color: rgba(200, 164, 104, 0.45); background: rgba(200, 164, 104, 0.045); transform: translateY(-1px); }
+  .bnode.is-active { border-color: rgba(200, 164, 104, 0.6); background: rgba(200, 164, 104, 0.07); }
+  .bnode.is-active::before { opacity: 1; transform: scaleY(1); }
+  .bnode__id { display: block; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.18em; color: var(--muted-2); text-transform: uppercase; }
+  .bnode__name { display: block; margin-top: 5px; font-size: 15px; color: var(--bone); letter-spacing: 0.01em; }
+  .bnode__meta { display: block; margin-top: 5px; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.04em; color: var(--muted); line-height: 1.6; }
+  .bnode--hub { padding: 20px 18px 22px; border-color: rgba(200, 164, 104, 0.35); background: rgba(200, 164, 104, 0.05); }
+  .bnode--hub .bnode__name { font-size: 21px; color: var(--brass-2); }
+
+  .bstore { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 0; }
+
+  .boardlegend {
+    grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px 26px;
+    padding-top: 18px; margin-top: 6px; border-top: 1px solid var(--line-2);
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted-2);
+  }
+  .boardlegend span { display: inline-flex; align-items: center; gap: 8px; }
+  .lg { display: inline-block; width: 22px; height: 1px; background: rgba(241,237,229,.22); }
+  .lg--dash { background: repeating-linear-gradient(to right, rgba(241,237,229,.22) 0 4px, transparent 4px 8px); }
+  .lg--sage { background: rgba(134,163,126,.7); }
+  .lg--dot { width: 5px; height: 5px; background: var(--brass); transform: rotate(45deg); }
+
+  .insp {
+    border: 1px solid var(--line);
+    background: rgba(10, 10, 12, 0.72);
+    position: sticky; top: 92px;
+  }
+  .insp__head { padding: 16px 18px; border-bottom: 1px solid var(--line-2); }
+  .insp__id { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; color: var(--brass); text-transform: uppercase; }
+  .insp__title { margin-top: 7px; font-family: var(--font-display); font-weight: 300; font-size: 22px; }
+  .insp__sub { margin-top: 6px; font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+  .insp__body { padding: 6px 18px 18px; }
+  .insp__row { display: grid; grid-template-columns: 86px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line-2); }
+  .insp__row:last-child { border-bottom: 0; }
+  .insp__k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); padding-top: 2px; }
+  .insp__v { font-size: 13px; line-height: 1.75; color: var(--bone-2); }
+  .insp__v code { font-family: var(--font-mono); font-size: 11.5px; color: var(--brass-2); }
+  .insp__note { margin: 12px 18px 18px; padding: 12px 14px; border-left: 1px solid rgba(200, 164, 104, 0.4); font-size: 12px; color: var(--muted); line-height: 1.8; }
+
+  .dirs { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3vw, 40px); }
+  .dirtable { width: 100%; border-collapse: collapse; }
+  .dirtable td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line-2); font-size: 13px; vertical-align: top; }
+  .dirtable td:first-child { font-family: var(--font-mono); font-size: 12px; color: var(--brass-2); white-space: nowrap; width: 40%; }
+  .tick { display: inline-block; width: 10px; margin-right: 8px; color: var(--muted-2); }
+  .dirtable td:last-child { color: var(--body-dim); }
+
+  .formula { border-top: 1px solid var(--line); }
+  .formula__row {
+    display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 20px; padding: 15px 0; border-bottom: 1px solid var(--line-2); align-items: baseline;
+  }
+  .formula__k { font-family: var(--font-mono); font-size: 12px; color: var(--brass); }
+  .formula__v { font-family: var(--font-mono); font-size: 12px; color: var(--bone-2); letter-spacing: 0; word-break: break-word; }
+  .formula__d { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  .hashlab { border: 1px solid var(--line); background: rgba(8, 8, 10, 0.6); padding: clamp(18px, 2.4vw, 28px); }
+  .hashlab__label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); margin-bottom: 14px; }
+  .tokrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .tok {
+    padding: 7px 11px; border: 1px solid var(--line); font-family: var(--font-mono); font-size: 11px;
+    color: var(--muted); letter-spacing: 0; transition: all .3s;
+  }
+  .tok:hover { border-color: var(--line-3); color: var(--bone-2); }
+  .tok[aria-pressed="true"] { border-color: rgba(200, 164, 104, 0.55); color: var(--brass-2); background: rgba(200, 164, 104, 0.08); }
+  .hashlab__expr {
+    font-family: var(--font-mono); font-size: 12px; color: var(--muted); line-height: 2;
+    border-top: 1px solid var(--line-2); padding-top: 18px; word-break: break-all;
+  }
+  .hashlab__expr b { color: var(--bone); font-weight: 400; }
+  .hashlab__out {
+    margin-top: 16px; font-family: var(--font-mono); font-size: clamp(13px, 1.6vw, 17px);
+    color: var(--brass-2); letter-spacing: 0.06em; word-break: break-all; line-height: 1.6;
+  }
+  .hashlab__foot { margin-top: 10px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); }
+
+  .ep-table td:first-child { font-family: var(--font-mono); font-size: 12px; color: var(--brass-2); white-space: nowrap; }
+  .ep-table td:nth-child(2) { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.12em; color: var(--muted-2); text-transform: uppercase; }
+
+  .perms { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .perm { background: var(--ink-0); padding: clamp(20px, 2.6vw, 30px); }
+  .perm--world { background: linear-gradient(180deg, rgba(200,164,104,.07), rgba(200,164,104,.012)); }
+  .perm__k { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+  .perm__t { margin-top: 12px; font-family: var(--font-display); font-weight: 300; font-size: clamp(19px, 1.9vw, 24px); line-height: 1.45; }
+  .perm__t .chip { vertical-align: 3px; margin-left: 6px; }
+  .perm__d { margin-top: 10px; font-size: 13px; line-height: 1.85; color: var(--muted); }
+  @media (max-width: 760px) { .perms { grid-template-columns: 1fr; } }
+
+  .glossary { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line-2); padding: 6px 0; }
+  .glossary summary {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px;
+    padding: 16px 0; cursor: pointer; list-style: none;
+  }
+  .glossary summary::-webkit-details-marker { display: none; }
+  .glossary summary span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+  .glossary summary small { font-size: 12.5px; color: var(--muted); }
+  .glossary summary::after { content: "+"; font-family: var(--font-mono); color: var(--brass); }
+  .glossary[open] summary::after { content: "−"; }
+  .glossary dl { margin: 0 0 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line-2); border: 1px solid var(--line-2); }
+  .glossary dl > div { background: var(--ink-0); padding: 14px 16px; }
+  .glossary dt { font-family: var(--font-mono); font-size: 11.5px; color: var(--brass-2); letter-spacing: .04em; }
+  .glossary dd { margin: 6px 0 0; font-size: 12.5px; line-height: 1.8; color: var(--body-dim); }
+
+  @media (max-width: 700px) {
+    .glossary dl { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 1080px) {
+    .lab { grid-template-columns: 1fr; }
+    .insp { position: static; }
+    .dirs { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 900px) {
+    .board { grid-template-columns: 1fr; min-height: 0; gap: 26px; }
+    .board__wires { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .ep-table, .ep-table thead, .ep-table tbody, .ep-table tr, .ep-table th, .ep-table td {
+      display: block; width: auto; white-space: normal;
+    }
+    .ep-table thead { display: none; }
+    .ep-table tr { padding: 12px 0; border-bottom: 1px solid var(--line-2); }
+    .ep-table td { border: 0; padding: 2px 0; }
+    .ep-table td:first-child { font-size: 13px; }
+    .ep-table td:nth-child(2) { display: none; }
+    .formula__v { word-break: break-all; }
+  }
+  @media (max-width: 700px) {
+    .formula__row { grid-template-columns: 1fr; gap: 6px; }
+    .insp__row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" data-progress></div>
+<div class="plate-layer plate-layer--ambient" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__brand" href="index.html" aria-label="recollect 首页">
+    <span class="nav__mark" aria-hidden="true"></span>
+    <span class="nav__word">recollect</span>
+    <span class="nav__sub">agent-native memory</span>
+  </a>
+  <nav class="nav__links" aria-label="主导航">
+    <a href="index.html" data-nav-link>总览</a>
+    <a href="companion.html" data-nav-link>陪伴</a>
+    <a href="engineering.html" data-nav-link>工程</a>
+    <a href="architecture.html" data-nav-link>架构</a>
+    <a href="memory.html" data-nav-link>记忆模型</a>
+    <a href="pipeline.html" data-nav-link>抽取</a>
+    <a href="reliability.html" data-nav-link>韧性</a>
+    <a href="evidence.html" data-nav-link>证据</a>
+    <a href="solo.html" data-nav-link>单机</a>
+  </nav>
+  <div class="nav__meta">
+    <a class="nav__lang" href="en/architecture.html" aria-label="Switch to English" hreflang="en">EN</a>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="nav__meta-text">schema v6</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="pagehead">
+    <div class="pagehead__bg" aria-hidden="true"></div>
+    <div class="plate-layer plate-layer--page" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="pagehead__kicker">01 / architecture</div>
+      <h1 class="pagehead__title display">三栏，<br>一份权威</h1>
+      <p class="pagehead__lede">
+        中心自己不需要有 agent；每台设备上跑一个本地节点。
+        备份按复制序号一条条追平，核对无误才允许接班；接班时换一代凭证，
+        旧中心再送东西过来会被直接拒绝。点下面的方块，看每一格实际落了什么。
+      </p>
+      <div class="pagehead__meta">
+        <span class="chip chip--brass">TLS 双向</span>
+        <span class="chip">默认私有网络</span>
+        <span class="chip">一次性配对码</span>
+        <span class="chip">五个常驻 + 四个转录读</span>
+        <span class="chip">按序号复制</span>
+        <span class="chip">25 张正式记忆表</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 拓扑 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">01</div>
+        <div>
+          <h2 class="sec-title">拓扑：点开每一格</h2>
+          <p class="sec-lede">细线是数据流；线上跑的小亮点，代表正在路上的一份数据。选中后，检视卡会列出它在磁盘上的实际结构。</p>
+        </div>
+      </div>
+
+      <div class="lab" data-reveal>
+        <div class="board" data-board>
+          <svg class="board__wires" data-wires aria-hidden="true"></svg>
+
+          <div class="board__col">
+            <div class="board__head">edge · 边缘设备</div>
+            <button class="bnode" data-node="agents">
+              <span class="bnode__id">host</span>
+              <span class="bnode__name">设备上的 agent</span>
+              <span class="bnode__meta">claude code · qoder · dsh · minimax</span>
+            </button>
+            <button class="bnode" data-node="converter">
+              <span class="bnode__id">adapter</span>
+              <span class="bnode__name">转换器</span>
+              <span class="bnode__meta">入库验收 · 不丢字段 · 四种来源都过</span>
+            </button>
+            <button class="bnode is-active" data-node="node">
+              <span class="bnode__id">node</span>
+              <span class="bnode__name">recollect-node</span>
+              <span class="bnode__meta">replica/ · pending.db · dr/ · device.key</span>
+            </button>
+            <button class="bnode" data-node="consume">
+              <span class="bnode__id">surface</span>
+              <span class="bnode__name">使用入口</span>
+              <span class="bnode__meta">mcp · hook · doctor</span>
+            </button>
+          </div>
+
+          <div class="board__col">
+            <div class="board__head board__head--brass">hub · 中心</div>
+            <button class="bnode bnode--hub" data-node="hub">
+              <span class="bnode__id">primary</span>
+              <span class="bnode__name">hub</span>
+              <span class="bnode__meta">排抽取 · 解析编号 · 记归属 · 审计</span>
+            </button>
+            <div class="bstore">
+              <span class="chip">transcript.db</span>
+              <span class="chip">memory.db</span>
+              <span class="chip">core.db</span>
+              <span class="chip">ledger.db</span>
+              <span class="chip">keys/</span>
+              <span class="chip">backups/</span>
+              <span class="chip">secrets.enc</span>
+            </div>
+          </div>
+
+          <div class="board__col">
+            <div class="board__head">standby · 备份</div>
+            <button class="bnode" data-node="standby">
+              <span class="bnode__id">replica</span>
+              <span class="bnode__name">standby</span>
+              <span class="bnode__meta">按序号追平 · 换凭证 · 挡旧中心</span>
+            </button>
+            <div class="bstore">
+              <span class="chip chip--sage">追平</span>
+              <span class="chip">校验</span>
+              <span class="chip chip--rust">缺条目 ⇒ 不接班</span>
+            </div>
+          </div>
+
+          <div class="boardlegend">
+            <span><i class="lg lg--solid"></i>配对 / 入库</span>
+            <span><i class="lg lg--dash"></i>行 / 快照</span>
+            <span><i class="lg lg--sage"></i>复制序号</span>
+            <span><i class="lg lg--dot"></i>正在路上的一份数据</span>
+          </div>
+        </div>
+
+        <aside class="insp" data-insp aria-live="polite">
+          <div class="insp__head">
+            <div class="insp__id" data-insp-id>node</div>
+            <div class="insp__title" data-insp-title>recollect-node</div>
+            <div class="insp__sub" data-insp-sub>边缘上的同步与离线整理</div>
+          </div>
+          <div class="insp__body" data-insp-body></div>
+          <div class="insp__note" data-insp-note></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 数据落盘 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">02</div>
+        <div>
+          <h2 class="sec-title">数据落在哪里</h2>
+          <p class="sec-lede">
+            中心与节点各自是一个目录。账本不出中心，密钥不进模型，备份不藏私钥明文——
+            这三条决定了整个运维的样子。
+          </p>
+        </div>
+      </div>
+
+      <div class="dirs">
+        <div class="panel" data-reveal style="--i:0">
+          <div class="panel__head">
+            <span class="panel__title">hub · --data-dir</span>
+            <span class="chip chip--brass">中心</span>
+          </div>
+          <div class="panel__body">
+            <table class="dirtable">
+              <tbody>
+                <tr><td><span class="tick">├</span>transcript.db</td><td>原始对话，只增不改；每轮一行，永远不覆盖</td></tr>
+                <tr><td><span class="tick">├</span>memory.db</td><td>记忆本体，25 张正式核心表 + 7 张侧表（第 6 版）：结论行、实体行、来源与审计</td></tr>
+                <tr><td><span class="tick">├</span>core.db</td><td>agent 自己的加密小本：每 agent 一份，正文 / 修订 / 随手记三张加密表</td></tr>
+                <tr><td><span class="tick">├</span>keys/</td><td>core 每份小本的独立钥匙（32 字节），不通过 agent 工具暴露</td></tr>
+                <tr><td><span class="tick">├</span>ledger.db</td><td>账本、配额、进度书签——<b>不出中心</b></td></tr>
+                <tr><td><span class="tick">├</span>backups/</td><td>原始对话、记忆与清单三件，保留最近 7 组</td></tr>
+                <tr><td><span class="tick">├</span>hub.key</td><td>中心私钥，可用 <span class="code">hub key export</span> 加密归档</td></tr>
+                <tr><td><span class="tick">└</span>secrets.enc</td><td>密钥箱；开它的口令另存，不跟着备份走</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" data-reveal style="--i:1">
+          <div class="panel__head">
+            <span class="panel__title">node · data_dir</span>
+            <span class="chip">边缘</span>
+          </div>
+          <div class="panel__body">
+            <table class="dirtable">
+              <tbody>
+                <tr><td><span class="tick">├</span>device.key</td><td>节点私钥：配对和签名的根</td></tr>
+                <tr><td><span class="tick">├</span>replica/</td><td>整份下载下来的只读副本和检索索引；这一半只读，不会被改写</td></tr>
+                <tr><td><span class="tick">├</span>pending.db</td><td>断线后本地攒下的东西；断满一天之后的本地整理批次写这里</td></tr>
+                <tr><td><span class="tick">├</span>dr/</td><td>脱离中心（断满五天）之后每小时自备份；没确认的永远不删</td></tr>
+                <tr><td><span class="tick">└</span>node-state.json</td><td>同步、离线、自己当中心——三种状态记在这里</td></tr>
+              </tbody>
+            </table>
+            <div class="term" style="margin-top:18px">
+              <div class="term__bar"><span>recollect-node</span><span>status</span></div>
+              <div class="term__body"><span class="k">sync_state</span>         <span class="ok">connected</span>
+<span class="k">self_distill</span>       <span class="c">false</span>
+<span class="k">offline_elapsed_ms</span> <span class="c">0</span>
+<span class="k">pending_turns</span>      <span class="c">0</span>
+<span class="k">staging_rows</span>       <span class="c">0</span>
+<span class="k">dr_backup_count</span>    <span class="c">0</span></div>
+            </div>
+            <p class="dim" style="font-size:12px;margin-top:12px;line-height:1.8">
+              读数没有正文、没有路径——运维面只回答「有没有卡住」，不搬运内容。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-reveal style="margin-top:clamp(30px,4vw,48px)">
+        <div class="panel__head">
+          <span class="panel__title">导入为什么不由核心代劳</span>
+          <span class="chip chip--brass">契约 &gt; 插件</span>
+        </div>
+        <div class="panel__body" style="padding-top:0">
+          <ul class="sec-list">
+            <li><b>每家都在变</b><span>各家 agent 的会话格式、字段和版本都在动；核心写死任何一家，改一次就要动核心。</span></li>
+            <li><b>agent 自带转换器</b><span>按契约把会话写成事件；入库验收不过就改转换器，核心不解析任何私有格式。</span></li>
+            <li><b>新增源要试跑</b><span>四种来源已经过验收；新来源附一份试跑说明，照同一把尺子验。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 身份编号 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">03</div>
+        <div>
+          <h2 class="sec-title">身份是哈希，位置只是步号</h2>
+          <p class="sec-lede">
+            模型眼里只有 <span class="code">[e12]</span> 这样的短句柄——句柄就是召回结果前面的编号，拿着它能换回那条记忆；
+            完整定位符留给程序。七个编号各管一件事：哪个是真身份，哪个只是给人看的序号，哪个只管机器之间怎么同步。
+          </p>
+        </div>
+      </div>
+
+      <p class="dim" data-reveal style="font-size:13px;line-height:1.85;max-width:60ch;margin:22px 0 0">
+        读法：<span class="code">sha256(a | b)</span> 里的竖线是「拼起来再算哈希」；末尾带 <span class="code">?</span> 的字段可以没有。
+      </p>
+
+      <div class="formula" data-reveal>
+        <div class="formula__row">
+          <div class="formula__k">session_uid</div>
+          <div class="formula__v">sha256(source_agent | device_id | session_key | agent_instance_id?)</div>
+          <div class="formula__d">一个会话的身份；同一会话在另一台机器上导入仍是它</div>
+        </div>
+        <div class="formula__row">
+          <div class="formula__k">thread_uid</div>
+          <div class="formula__v">sha256(session_uid | thread_key)</div>
+          <div class="formula__d">会话里的对话线，子 agent 与主线程分开</div>
+        </div>
+        <div class="formula__row">
+          <div class="formula__k">turn_uid</div>
+          <div class="formula__v">源 turn id，或本轮第一条 user 消息的 event_uid</div>
+          <div class="formula__d">一轮的身份；源头没有原生轮号时，用推导出来的形式</div>
+        </div>
+        <div class="formula__row">
+          <div class="formula__k">event_uid</div>
+          <div class="formula__v">sha256(thread_uid | native_key | content_hash | occurrence)</div>
+          <div class="formula__d">事件的真实身份；把记忆指回原文，靠的就是它</div>
+        </div>
+        <div class="formula__row">
+          <div class="formula__k">revision_id</div>
+          <div class="formula__v">sha256(source_sha256 | adapter_version | ingest_version)</div>
+          <div class="formula__d">同一来源内容的一次解释版本</div>
+        </div>
+        <div class="formula__row">
+          <div class="formula__k">seq</div>
+          <div class="formula__v">首次入库分配的稳定步号（追加式）</div>
+          <div class="formula__d">只用于展示与引用，不是身份</div>
+        </div>
+        <div class="formula__row">
+          <div class="formula__k">commit_seq</div>
+          <div class="formula__v">(epoch, commit_seq) 中心复制顺序</div>
+          <div class="formula__d">只活在复制层，永远不会进到记忆的编号里</div>
+        </div>
+      </div>
+
+      <p class="dim" data-reveal style="font-size:13px;line-height:1.85;max-width:62ch;margin:18px 0 0">
+        一句话：模型只看得到句柄，真正认身份的是哈希；序号给人看，复制序号给机器同步用。
+      </p>
+
+      <div class="hashlab" style="margin-top:34px" data-reveal>
+        <div class="hashlab__label">实时合成器 · 选中字段即参与哈希</div>
+        <div class="tokrow" data-hash-tokens>
+          <button class="tok" aria-pressed="true" data-tok="source_agent=qoder">source_agent=qoder</button>
+          <button class="tok" aria-pressed="true" data-tok="device_id=D-01">device_id=D-01</button>
+          <button class="tok" aria-pressed="true" data-tok="session_key=S-80f2">session_key=S-80f2</button>
+          <button class="tok" aria-pressed="false" data-tok="agent_instance_id=A-7">agent_instance_id=A-7</button>
+        </div>
+        <div class="hashlab__expr">session_uid = sha256( <b data-hash-expr>…</b> )</div>
+        <div class="hashlab__out" data-hash-out>—</div>
+        <div class="hashlab__foot" data-hash-foot>等待输入</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 端点与命令 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">04</div>
+        <div>
+          <h2 class="sec-title"><span style="white-space:nowrap">五个常驻端点</span>，<span style="white-space:nowrap">四个转录读</span></h2>
+          <p class="sec-lede">
+            五个写与配对常驻；四个转录读只给已配对设备；下行快照在发布时出现。对外的东西越少，越能说清它答应了什么。
+          </p>
+        </div>
+      </div>
+
+      <div class="dirs">
+        <div class="panel" data-reveal>
+          <div class="panel__head"><span class="panel__title">hub serve · v1</span><span class="chip chip--brass">HTTP</span></div>
+          <div class="panel__body" style="padding-top:6px">
+            <table class="spec ep-table">
+              <thead><tr><th>端点</th><th>动作</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td>/v1/pair</td><td>post</td><td>用一次性码完成设备配对</td></tr>
+                <tr><td>/v1/challenge</td><td>post</td><td>让设备签个名，证明它是它</td></tr>
+                <tr><td>/v1/ingest</td><td>post</td><td>带签名写入一批事件，并防重复提交</td></tr>
+                <tr><td>/v1/rows</td><td>post</td><td>把离线攒下的行送回来；中心答 200 才允许继续拉快照</td></tr>
+                <tr><td>/v1/state</td><td>get</td><td>同步进度和中心状态</td></tr>
+                <tr><td>/v1/snapshot/memory</td><td>get</td><td>整份下载记忆快照（发布时）</td></tr>
+                <tr><td colspan="3" style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--brass);padding-top:18px">转录读取 · 只给已配对设备</td></tr>
+                <tr><td>/v1/transcript/sessions</td><td>get</td><td>中心全部可见会话的清单</td></tr>
+                <tr><td>/v1/transcript/session</td><td>get</td><td>按会话回放轮正文，支持分页</td></tr>
+                <tr><td>/v1/transcript/search</td><td>get</td><td>在中心全文索引上按词查原话</td></tr>
+                <tr><td>/v1/transcript/turn</td><td>get</td><td>按 turn_uid 取目标轮与前后各 ≤10 轮</td></tr>
+              </tbody>
+            </table>
+            <p class="dim" style="font-size:12px;line-height:1.8;margin:16px 0 4px">
+              另外还有备份复制面 <span class="code">/v1/replicate*</span> 和配对时读取的 <span class="code">/v1/identity</span>；它们只在接班或配对时用，不在日常设备路径上。
+            </p>
+          </div>
+        </div>
+
+        <div data-reveal style="--i:1">
+          <div class="term">
+            <div class="term__bar"><span>recollect-hub cycle once</span><span>抽取一轮</span></div>
+            <div class="term__body"><span class="c"># 座位来自 --llm-config 或可重复的 --replies</span>
+<span class="c"># 两者都不给 → 退出 3，错误面点名这两个旗标</span>
+
+<span class="k">$</span> recollect-hub import --data-dir ./data \
+    fixtures/exchange/synthetic_basic.json
+<span class="ok">imported</span>  1 session · 1 revision
+
+<span class="k">$</span> recollect-hub cycle once --data-dir ./data --llm-config ./llm.toml
+<span class="ok">cycle</span>    seats=1 batches=1 committed=1
+
+<span class="k">$</span> recollect-hub index status --data-dir ./data
+<span class="k">memory_version</span>  <span class="v">6</span>
+<span class="k">rows</span>            <span class="v">·</span>
+<span class="k">watermark</span>       <span class="v">advanced</span></div>
+          </div>
+          <p class="dim" style="font-size:12px;margin-top:14px;line-height:1.8">
+            上面是一段示意调用序列；真实读数以本机 <span class="code">--help</span> 与 <span class="code">index status</span> 为准。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 部署与网络 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">05</div>
+        <div>
+          <h2 class="sec-title">局域网里，或者隔着半个国家</h2>
+          <p class="sec-lede">
+            同一台设备、同一个局域网、异地——三种连法用同一套东西，不需要为「远程」再部署一套服务。
+            默认跑在可信的私有网络里：异地把两台机器用隧道或组网拉进同一个私网，不把端口直接开到公网。
+          </p>
+        </div>
+      </div>
+
+      <div class="nets" data-reveal>
+        <div class="net">
+          <div class="net__k">01 / 本机</div>
+          <div class="net__t">一台机器就是中心</div>
+          <p class="net__d">没有远端也能跑：导入、抽取、召回都在本机完成。</p>
+        </div>
+        <div class="net">
+          <div class="net__k">02 / 局域网</div>
+          <div class="net__t">直连一个地址</div>
+          <p class="net__d">设备地址簿里记一条 LAN 地址，节点按顺序试，连上就走。</p>
+        </div>
+        <div class="net">
+          <div class="net__k">03 / 异地</div>
+          <div class="net__t">经隧道或组网</div>
+          <p class="net__d">地址簿里再加一条；上次成功的排最前面，换网不用先等一条死路超时。</p>
+        </div>
+      </div>
+
+      <div style="margin-top:clamp(30px,4vw,48px)" data-reveal>
+        <ul class="sec-list">
+          <li><b>认机器，不认地址</b><span>每台设备用自己的私钥签名，中心提前钉好公钥。签名不绑 IP，换网络不用重新配对；但没有那把私钥，占住同一个 IP 也签不过。</span></li>
+          <li><b>只开一个口</b><span>所有对外通信走同一个加密端口，设备和中心互相验身份；不另开管理口、调试口。</span></li>
+          <li><b>配对只用一次</b><span>一次性配对码换设备身份；之后靠签名，不靠密码。</span></li>
+          <li><b>转录读也认设备</b><span>四条转录读路由只对已配对设备开放；读一次落一行审计，只记谁读了哪个会话，不记正文。</span></li>
+          <li><b>密钥不进模型</b><span>密钥只从管道进，不进模型、不进参数表；每个 agent 的小本各用一把独立钥匙。</span></li>
+          <li><b>账本不出中心</b><span>配额和进度只留在中心，备份里也没有；私钥从不以明文进备份。</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 06 多 agent / 多设备 ============ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <div class="sec-num">06</div>
+        <div>
+          <h2 class="sec-title">多台设备、多个 agent，谁看得到谁</h2>
+          <p class="sec-lede">
+            默认按「可信 agent 环境」设计：同一局域网里的已配对设备都算自己人。世界记忆共用，core 各归各的。
+          </p>
+        </div>
+      </div>
+
+      <div class="perms" data-reveal>
+        <article class="perm perm--world">
+          <div class="perm__k">世界记忆</div>
+          <h3 class="perm__t">多 agent 共用</h3>
+          <p class="perm__d">同一主人名下的 agent 把会话都交进这份库，抽取统一在中心跑；大家都能查、都能接着用，换设备也接得上。</p>
+        </article>
+        <article class="perm perm--core">
+          <div class="perm__k">core</div>
+          <h3 class="perm__t">只认一把钥匙</h3>
+          <p class="perm__d">每个 agent 的加密小本各用一把独立钥匙；core_* 只对这一个 agent 身份开放，别的 agent 调不到。</p>
+        </article>
+        <article class="perm">
+          <div class="perm__k">会话原文</div>
+          <h3 class="perm__t">记忆里只有指针</h3>
+          <p class="perm__d">原文只留在 agent 侧和中心；共享记忆里存的是 <span class="code">turn_uid</span> 指针，不是原文。recollect_turn 凭指针取回那一轮（前后各 ≤10 轮），recollect_session 按会话回放；两者走同一把可见性闸。</p>
+        </article>
+        <article class="perm">
+          <div class="perm__k">跨机读取</div>
+          <h3 class="perm__t">中心优先，断线回落 <span class="chip chip--brass">可信局域网</span></h3>
+          <p class="perm__d">边缘先向中心的四条转录路由要数据；中心不可达才读本机，并在回执里标 <span class="code">source=local</span> + <span class="code">degraded</span>，不会假装中心零命中。</p>
+        </article>
+      </div>
+
+      <p class="dim" data-reveal style="font-size:12.5px;line-height:1.9;max-width:76ch;margin-top:16px">
+        默认前提：同一局域网里的已配对设备视为可信——能配对进来，就能读中心会话，不再按主人切分。
+        这条局域网信任只作用于转录读；世界记忆和 core 仍按原来的闸。不要把未受信任的设备配进来，也不要把中心暴露到公网；
+        异地就用隧道或组网，把机器拉进同一个私网。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 07 术语 ============ -->
+  <section class="sec sec--tight">
+    <div class="wrap">
+      <details class="glossary" data-reveal>
+        <summary><span>术语小词典</span><small>十一个词，读别的页卡住时回来查</small></summary>
+        <dl>
+          <div><dt>句柄</dt><dd>召回结果前面的 <span class="code">[1]</span>。拿着它能换回那条记忆。</dd></div>
+          <div><dt>指针</dt><dd>一条记忆指向原始对话里某一轮、某一段的编号。原文不动，指针就不失效。</dd></div>
+          <div><dt>进度书签</dt><dd>处理到第几行的记号。成功了才前移，失败就停在那，下次接着来。</dd></div>
+          <div><dt>闸</dt><dd>一道自动检查。过不了就不往下走，并写清原因；不是靠人盯着。</dd></div>
+          <div><dt>本地整理</dt><dd>连不上中心时，节点在本地暂存的数据上继续做抽取，不等网。</dd></div>
+          <div><dt>回并</dt><dd>网络恢复后，把本地攒下的东西按固定顺序送回中心，一步不能跳。</dd></div>
+          <div><dt>锚</dt><dd>一个人、一个项目、一台机器在库里的固定身份；关于它的记忆都挂在上面。</dd></div>
+          <div><dt>幂等</dt><dd>同一份东西送两次，只算一次，不会写重。</dd></div>
+          <div><dt>接班</dt><dd>备份追平并核对通过后转正；旧中心随即被挡住，不能再写。</dd></div>
+          <div><dt>快照</dt><dd>某一刻整份记忆的拷贝；发布时下发给节点，平时按增量同步。</dd></div>
+          <div><dt>转录读</dt><dd>按会话或 turn_uid 从中心取原话；四条只读路由只对已配对设备开放。</dd></div>
+        </dl>
+      </details>
+    </div>
+  </section>
+
+  <section class="sec sec--tight">
+    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <a class="btn btn--ghost" href="engineering.html">← 工程型</a>
+      <a class="btn" href="memory.html">记忆怎么组织 <span class="btn__arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__in">
+      <div>
+        <div class="foot__mark">recollect</div>
+        <p>面向 agent 的通用长期记忆服务。原始记录是事实源，记忆是索引。</p>
+      </div>
+      <div>
+        <div class="foot__col-title">页面</div>
+        <div class="foot__links">
+          <a href="companion.html">陪伴型</a>
+          <a href="engineering.html">工程型</a>
+          <a href="architecture.html">架构与身份</a>
+          <a href="memory.html">记忆模型</a>
+          <a href="pipeline.html">抽取流水线</a>
+          <a href="reliability.html">韧性</a>
+          <a href="evidence.html">证据</a>
+          <a href="solo.html">一台设备</a>
+        </div>
+      </div>
+      <div class="foot__note">
+        页面内容取自项目设计稿与实现。
+        页面里的动态数字仅作示范，用来说明状态怎么变，不代表线上读数。
+        <div class="foot__repo">
+          <a href="https://github.com/lingxinsuixing/recollect" target="_blank" rel="noopener">GitHub · lingxinsuixing/recollect <span aria-hidden="true">↗</span></a>
+          <span>作者 / 维护者：lingxinsuixing</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot__bottom">
+      <span>recollect · schema v6 · 2026</span>
+      <span>designed for agents, readable by humans</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script src="assets/arch-board.js"></script>
+</body>
+</html>

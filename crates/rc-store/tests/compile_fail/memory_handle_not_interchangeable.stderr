@@ -1,0 +1,15 @@
+error[E0308]: mismatched types
+ --> tests/compile_fail/memory_handle_not_interchangeable.rs:5:18
+  |
+5 |     needs_memory(root.transcript());
+  |     ------------ ^^^^^^^^^^^^^^^^^ expected `&MemoryHandle`, found `&TranscriptHandle`
+  |     |
+  |     arguments to this function are incorrect
+  |
+  = note: expected reference `&MemoryHandle`
+             found reference `&TranscriptHandle`
+note: function defined here
+ --> tests/compile_fail/memory_handle_not_interchangeable.rs:2:4
+  |
+2 | fn needs_memory(_h: &rc_store::MemoryHandle) {}
+  |    ^^^^^^^^^^^^ ---------------------------

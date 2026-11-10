@@ -1,0 +1,12 @@
+/target
+/data
+/dist
+*.tmp
+.worktrees/
+# 本地 subagent 工作档（含真实语料与凭据痕迹），永不入库。
+.superpowers/
+__pycache__/
+# core export 的明文导出（<data-dir>/exports/<agent>/core-<日期戳>.md|.json）不进 git。
+**/exports/
+# 发布用 nfpm 配置由 packaging/nfpm.yaml.in 渲染，不入库。
+packaging/nfpm.yaml
