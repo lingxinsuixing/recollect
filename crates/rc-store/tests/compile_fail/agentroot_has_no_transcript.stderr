@@ -1,0 +1,5 @@
+error[E0599]: no method named `transcript` found for struct `AgentRoot` in the current scope
+ --> tests/compile_fail/agentroot_has_no_transcript.rs:6:17
+  |
+6 |     let _t = ar.transcript();
+  |                 ^^^^^^^^^^ method not found in `AgentRoot`

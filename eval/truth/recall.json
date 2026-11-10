@@ -1,0 +1,37 @@
+{
+  "queries": [
+    {
+      "query": "离线 回并 批次",
+      "relevant_titles": ["合成-0000", "合成-0001", "合成-0002"]
+    },
+    {
+      "query": "索引 重建 影子 表",
+      "relevant_titles": ["合成-0003", "合成-0004"]
+    },
+    {
+      "query": "重生成答案",
+      "relevant_titles": ["合成-0005"],
+      "hard_case": true
+    },
+    {
+      "query": "同步 冲突 解决",
+      "relevant_titles": ["合成-0006"]
+    },
+    {
+      "query": "跨库 身份 校验",
+      "relevant_titles": ["合成-0007", "合成-0008"]
+    },
+    {
+      "query": "备份 恢复 清单",
+      "relevant_titles": ["合成-0009", "合成-0010"]
+    },
+    {
+      "query": "双目标 构建 冷启动",
+      "relevant_titles": ["合成-0011"]
+    },
+    {
+      "query": "天顶星曲率引擎蓝图",
+      "relevant_titles": []
+    }
+  ]
+}

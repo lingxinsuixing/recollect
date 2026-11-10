@@ -1,0 +1,15 @@
+[package]
+name = "rc-memory"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+rusqlite = { workspace = true }
+sha2 = { workspace = true }
+unicode-normalization = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -1,0 +1,7 @@
+error[E0432]: unresolved import `rc_distill`
+ --> tests/compile_fail/maintenance_distill_invisible.rs:3:5
+  |
+3 | use rc_distill as _;
+  |     ----------^^^^^
+  |     |
+  |     no external crate `rc_distill`

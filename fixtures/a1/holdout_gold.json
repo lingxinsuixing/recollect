@@ -1,0 +1,3233 @@
+{
+  "format_version": 2,
+  "note": "holdout 合成语料 gold v2：实体 + 逐轮 mention/unresolved/no_anchor。",
+  "entities": [
+    {
+      "id": "zhao_xiaoyu",
+      "kind": "person",
+      "tokens": [
+        "赵晓雨"
+      ],
+      "aliases": [
+        "小赵"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "atlas",
+      "kind": "work",
+      "tokens": [
+        "Atlas"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "raspberry_pi",
+      "kind": "object",
+      "tokens": [
+        "树莓派 4B"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "samsung_t7",
+      "kind": "object",
+      "tokens": [
+        "三星 T7"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "wang_jianguo",
+      "kind": "person",
+      "tokens": [
+        "王建国"
+      ],
+      "aliases": [
+        "外包的王建国"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "wang_qiang",
+      "kind": "person",
+      "tokens": [
+        "王强"
+      ],
+      "aliases": [
+        "运维组的老王"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "machine_room",
+      "kind": "place",
+      "tokens": [
+        "机房"
+      ],
+      "aliases": [
+        "二楼机房"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "migration_report",
+      "kind": "work",
+      "tokens": [
+        "迁移报告"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "liu_min",
+      "kind": "person",
+      "tokens": [
+        "刘敏"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "chengdu",
+      "kind": "place",
+      "tokens": [
+        "成都"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "b302",
+      "kind": "place",
+      "tokens": [
+        "B302"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "weekly_meeting",
+      "kind": "event",
+      "tokens": [
+        "周会"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-01"
+      ]
+    },
+    {
+      "id": "ho_s02_konglingyi",
+      "kind": "person",
+      "tokens": [
+        "孔令仪"
+      ],
+      "aliases": [
+        "令仪"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s02"
+      ]
+    },
+    {
+      "id": "ho_s02_bailu",
+      "kind": "person",
+      "tokens": [
+        "白露"
+      ],
+      "aliases": [
+        "白老师"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s02"
+      ]
+    },
+    {
+      "id": "ho_s02_chenghai",
+      "kind": "org",
+      "tokens": [
+        "澄海实验室"
+      ],
+      "aliases": [
+        "实验室"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s02"
+      ]
+    },
+    {
+      "id": "ho_s02_qingfengxiang",
+      "kind": "place",
+      "tokens": [
+        "青枫巷"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s02"
+      ]
+    },
+    {
+      "id": "ho_s02_baoxiudan",
+      "kind": "work",
+      "tokens": [
+        "报修单"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s02"
+      ]
+    },
+    {
+      "id": "ho_s02_paibanbiao",
+      "kind": "work",
+      "tokens": [
+        "排班表"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s02"
+      ]
+    },
+    {
+      "id": "ho_s03_l3253",
+      "kind": "object",
+      "tokens": [
+        "爱普生 L3253"
+      ],
+      "aliases": [
+        "扫描仪"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s03"
+      ]
+    },
+    {
+      "id": "ho_s03_xps13",
+      "kind": "object",
+      "tokens": [
+        "戴尔 XPS 13"
+      ],
+      "aliases": [
+        "旧电脑"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s03"
+      ]
+    },
+    {
+      "id": "ho_s03_ts464",
+      "kind": "object",
+      "tokens": [
+        "威联通 TS-464"
+      ],
+      "aliases": [
+        "NAS"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s03"
+      ]
+    },
+    {
+      "id": "ho_s03_luming",
+      "kind": "place",
+      "tokens": [
+        "鹿鸣咖啡馆"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s03"
+      ]
+    },
+    {
+      "id": "ho_s04_haiwu",
+      "kind": "work",
+      "tokens": [
+        "海雾项目"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s04"
+      ]
+    },
+    {
+      "id": "ho_s04_supplierlist",
+      "kind": "work",
+      "tokens": [
+        "供应商清单"
+      ],
+      "aliases": [
+        "清单"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s04"
+      ]
+    },
+    {
+      "id": "ho_s04_migrationmanual",
+      "kind": "work",
+      "tokens": [
+        "迁移手册"
+      ],
+      "aliases": [
+        "手册"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s04"
+      ]
+    },
+    {
+      "id": "ho_s04_nanyuops",
+      "kind": "org",
+      "tokens": [
+        "南屿运维组"
+      ],
+      "aliases": [
+        "运维组"
+      ],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s04"
+      ]
+    },
+    {
+      "id": "ho_s04_cursor",
+      "kind": "agent",
+      "tokens": [
+        "Cursor"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s04"
+      ]
+    },
+    {
+      "id": "ho_s05_pingtai",
+      "kind": "org",
+      "tokens": [
+        "临江数据平台组"
+      ],
+      "aliases": [
+        "平台组"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s05"
+      ]
+    },
+    {
+      "id": "ho_s05_c501",
+      "kind": "place",
+      "tokens": [
+        "C 座 501"
+      ],
+      "aliases": [
+        "501"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s05"
+      ]
+    },
+    {
+      "id": "ho_s05_zengxian",
+      "kind": "person",
+      "tokens": [
+        "曾宪"
+      ],
+      "aliases": [
+        "老曾"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s05"
+      ]
+    },
+    {
+      "id": "ho_s05_jincheng",
+      "kind": "place",
+      "tokens": [
+        "锦城"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s05"
+      ]
+    },
+    {
+      "id": "ho_s05_monthly",
+      "kind": "work",
+      "tokens": [
+        "月报"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s05"
+      ]
+    },
+    {
+      "id": "ho_s06_shenji",
+      "kind": "event",
+      "tokens": [
+        "年度审计"
+      ],
+      "aliases": [
+        "审计",
+        "审计季"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s06"
+      ]
+    },
+    {
+      "id": "ho_s06_hunli",
+      "kind": "event",
+      "tokens": [
+        "婚礼"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s06"
+      ]
+    },
+    {
+      "id": "ho_s06_tuanjian",
+      "kind": "event",
+      "tokens": [
+        "团建"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s06"
+      ]
+    },
+    {
+      "id": "ho_s06_jiangwen",
+      "kind": "person",
+      "tokens": [
+        "蒋闻"
+      ],
+      "aliases": [
+        "老蒋"
+      ],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s06"
+      ]
+    },
+    {
+      "id": "ho_s06_scenesheet",
+      "kind": "work",
+      "tokens": [
+        "分场表"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s06"
+      ]
+    },
+    {
+      "id": "ho_s07_zhongming_fawu",
+      "kind": "person",
+      "tokens": [
+        "钟鸣",
+        "法务组"
+      ],
+      "aliases": [
+        "法务组的钟鸣"
+      ],
+      "core": true,
+      "mode": "all",
+      "sessions": [
+        "ses-a1-holdout-s07"
+      ]
+    },
+    {
+      "id": "ho_s07_zhongming_shiyou",
+      "kind": "person",
+      "tokens": [
+        "钟鸣",
+        "大学室友"
+      ],
+      "aliases": [
+        "大学室友钟鸣"
+      ],
+      "core": true,
+      "mode": "all",
+      "sessions": [
+        "ses-a1-holdout-s07"
+      ]
+    },
+    {
+      "id": "ho_s07_tanya",
+      "kind": "person",
+      "tokens": [
+        "谭雅"
+      ],
+      "aliases": [
+        "小谭"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s07"
+      ]
+    },
+    {
+      "id": "ho_s07_luchen",
+      "kind": "person",
+      "tokens": [
+        "陆沉"
+      ],
+      "aliases": [
+        "老陆"
+      ],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s07"
+      ]
+    },
+    {
+      "id": "ho_s08_fangrui",
+      "kind": "person",
+      "tokens": [
+        "方睿"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s08"
+      ]
+    },
+    {
+      "id": "ho_s08_chenghai_caiwu",
+      "kind": "org",
+      "tokens": [
+        "澄海财务群"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s08"
+      ]
+    },
+    {
+      "id": "ho_s08_duansiyuan",
+      "kind": "person",
+      "tokens": [
+        "段思远"
+      ],
+      "aliases": [
+        "老段"
+      ],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s08"
+      ]
+    },
+    {
+      "id": "ho_s08_duizhangbiao",
+      "kind": "work",
+      "tokens": [
+        "对账表"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s08"
+      ]
+    },
+    {
+      "id": "ho_s09_suhe",
+      "kind": "person",
+      "tokens": [
+        "苏禾"
+      ],
+      "aliases": [
+        "苏老师"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s09"
+      ]
+    },
+    {
+      "id": "ho_s09_gunan",
+      "kind": "person",
+      "tokens": [
+        "顾南"
+      ],
+      "aliases": [
+        "小顾"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s09"
+      ]
+    },
+    {
+      "id": "ho_s09_linlan",
+      "kind": "person",
+      "tokens": [
+        "林澜"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s09"
+      ]
+    },
+    {
+      "id": "ho_s09_qingfengtheater",
+      "kind": "place",
+      "tokens": [
+        "青枫剧场"
+      ],
+      "aliases": [
+        "剧场"
+      ],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s09"
+      ]
+    },
+    {
+      "id": "ho_s09_rehearsalhall",
+      "kind": "place",
+      "tokens": [
+        "排练厅"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s09"
+      ]
+    },
+    {
+      "id": "ho_s10_qiyuan",
+      "kind": "person",
+      "tokens": [
+        "齐远"
+      ],
+      "aliases": [
+        "老齐"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s10"
+      ]
+    },
+    {
+      "id": "ho_s10_kimi_cli",
+      "kind": "agent",
+      "tokens": [
+        "Kimi CLI"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s10"
+      ]
+    },
+    {
+      "id": "ho_s10_index_job",
+      "kind": "work",
+      "tokens": [
+        "向量索引任务"
+      ],
+      "aliases": [
+        "索引任务"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s10"
+      ]
+    },
+    {
+      "id": "ho_s10_regress_sheet",
+      "kind": "work",
+      "tokens": [
+        "检索回归表"
+      ],
+      "aliases": [
+        "回归表"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s10"
+      ]
+    },
+    {
+      "id": "ho_s10_snapshot",
+      "kind": "object",
+      "tokens": [
+        "索引快照"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s10"
+      ]
+    },
+    {
+      "id": "ho_s10_retrieval_service",
+      "kind": "object",
+      "tokens": [
+        "检索服务"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s10"
+      ]
+    },
+    {
+      "id": "ho_s11_jiangyue",
+      "kind": "person",
+      "tokens": [
+        "江月"
+      ],
+      "aliases": [
+        "小月"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s11"
+      ]
+    },
+    {
+      "id": "ho_s11_wei_ayi",
+      "kind": "person",
+      "tokens": [
+        "魏阿姨"
+      ],
+      "aliases": [
+        "魏姨"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s11"
+      ]
+    },
+    {
+      "id": "ho_s11_bp_monitor",
+      "kind": "object",
+      "tokens": [
+        "血压计"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s11"
+      ]
+    },
+    {
+      "id": "ho_s11_air_fryer",
+      "kind": "object",
+      "tokens": [
+        "空气炸锅"
+      ],
+      "aliases": [
+        "炸锅"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s11"
+      ]
+    },
+    {
+      "id": "ho_s11_clinic",
+      "kind": "place",
+      "tokens": [
+        "社区医院"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s11"
+      ]
+    },
+    {
+      "id": "ho_s11_chongyang",
+      "kind": "event",
+      "tokens": [
+        "重阳节"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s11"
+      ]
+    },
+    {
+      "id": "ho_s12_luo_yiming",
+      "kind": "person",
+      "tokens": [
+        "罗一鸣"
+      ],
+      "aliases": [
+        "老罗"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_lanwan_pm",
+      "kind": "org",
+      "tokens": [
+        "蓝湾产品组"
+      ],
+      "aliases": [
+        "蓝湾"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_release_list",
+      "kind": "work",
+      "tokens": [
+        "发布清单"
+      ],
+      "aliases": [
+        "发布单"
+      ],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_rollback_manual",
+      "kind": "work",
+      "tokens": [
+        "回滚手册"
+      ],
+      "aliases": [],
+      "core": true,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_pan_yue",
+      "kind": "person",
+      "tokens": [
+        "潘越"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_staging",
+      "kind": "place",
+      "tokens": [
+        "预发环境"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_gateway",
+      "kind": "object",
+      "tokens": [
+        "网关"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    },
+    {
+      "id": "ho_s12_retro",
+      "kind": "work",
+      "tokens": [
+        "复盘"
+      ],
+      "aliases": [],
+      "core": false,
+      "sessions": [
+        "ses-a1-holdout-s12"
+      ]
+    }
+  ],
+  "forbidden": [
+    "陈总",
+    "孙工",
+    "一个同事",
+    "那批数据",
+    "行政",
+    "邵董",
+    "秦主任",
+    "温宁"
+  ],
+  "allowed_extra": [
+    "会议纪要模板",
+    "备份镜像",
+    "报告模板",
+    "迁移方案",
+    "流水"
+  ],
+  "turns": [
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "赵晓雨",
+          "entity": "zhao_xiaoyu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "成都",
+          "entity": "chengdu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "Atlas",
+          "entity": "atlas",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "明天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "小赵",
+          "entity": "zhao_xiaoyu",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "周会",
+          "entity": "weekly_meeting",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "B302",
+          "entity": "b302",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "会议室"
+      ],
+      "no_anchor": [
+        "周四下午三点"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 3,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": [
+        "周四两点半"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "树莓派 4B",
+          "entity": "raspberry_pi",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "三星 T7",
+          "entity": "samsung_t7",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "三星 T7",
+          "entity": "samsung_t7",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "1TB"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": [
+        "1TB"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 7,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "外包的王建国",
+          "entity": "wang_jianguo",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "二楼机房",
+          "entity": "machine_room",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "下周"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 9,
+      "mentions": [
+        {
+          "surface": "王建国",
+          "entity": "wang_jianguo",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "运维组的老王",
+          "entity": "wang_qiang",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 10,
+      "mentions": [
+        {
+          "surface": "王建国",
+          "entity": "wang_jianguo",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "运维组的老王",
+          "entity": "wang_qiang",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "王强",
+          "entity": "wang_qiang",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 11,
+      "mentions": [
+        {
+          "surface": "王建国",
+          "entity": "wang_jianguo",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "王强",
+          "entity": "wang_qiang",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 12,
+      "mentions": [
+        {
+          "surface": "Atlas",
+          "entity": "atlas",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "docs/atlas",
+        "plan-v2.md"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 13,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 14,
+      "mentions": [],
+      "unresolved": [
+        "一个同事",
+        "那批数据"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 15,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 16,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 17,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 18,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 19,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 20,
+      "mentions": [
+        {
+          "surface": "赵晓雨",
+          "entity": "zhao_xiaoyu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "迁移报告",
+          "entity": "migration_report",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "下周三"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 21,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": [
+        "周三"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 22,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": [
+        "上周"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 23,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 24,
+      "mentions": [
+        {
+          "surface": "王建国",
+          "entity": "wang_jianguo",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 25,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 26,
+      "mentions": [
+        {
+          "surface": "机房",
+          "entity": "machine_room",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "行政"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 27,
+      "mentions": [],
+      "unresolved": [
+        "行政"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 28,
+      "mentions": [
+        {
+          "surface": "刘敏",
+          "entity": "liu_min",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "行政"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-01",
+      "turn_index": 29,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": [
+        "今天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "孔令仪",
+          "entity": "ho_s02_konglingyi",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "澄海实验室",
+          "entity": "ho_s02_chenghai",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "青枫巷",
+          "entity": "ho_s02_qingfengxiang",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "旧库房"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "白老师",
+          "entity": "ho_s02_bailu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "令仪",
+          "entity": "ho_s02_konglingyi",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "白露",
+          "entity": "ho_s02_bailu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "令仪",
+          "entity": "ho_s02_konglingyi",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "实验室",
+          "entity": "ho_s02_chenghai",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "令仪",
+          "entity": "ho_s02_konglingyi",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [
+        "那台离心机"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "孔令仪",
+          "entity": "ho_s02_konglingyi",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "报修单",
+          "entity": "ho_s02_baoxiudan",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "10 月 30 日"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "白老师",
+          "entity": "ho_s02_bailu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "青枫巷",
+          "entity": "ho_s02_qingfengxiang",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "前台"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [
+        "哪个学生",
+        "前台"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "澄海实验室",
+          "entity": "ho_s02_chenghai",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "排班表",
+          "entity": "ho_s02_paibanbiao",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "一个学生"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s02",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "实验室",
+          "entity": "ho_s02_chenghai",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "令仪",
+          "entity": "ho_s02_konglingyi",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "半小时"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "爱普生 L3253",
+          "entity": "ho_s03_l3253",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "扫描仪",
+          "entity": "ho_s03_l3253",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 1,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 2,
+      "mentions": [],
+      "unresolved": [
+        "那根网线"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "扫描仪",
+          "entity": "ho_s03_l3253",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "戴尔 XPS 13",
+          "entity": "ho_s03_xps13",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "旧电脑",
+          "entity": "ho_s03_xps13",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "扩展坞"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "NAS",
+          "entity": "ho_s03_ts464",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "威联通 TS-464",
+          "entity": "ho_s03_ts464",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 6,
+      "mentions": [
+        {
+          "surface": "鹿鸣咖啡馆",
+          "entity": "ho_s03_luming",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "NAS",
+          "entity": "ho_s03_ts464",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "周六"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s03",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "旧电脑",
+          "entity": "ho_s03_xps13",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "卖家",
+        "扩展坞",
+        "帖子"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "海雾项目",
+          "entity": "ho_s04_haiwu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "供应商清单",
+          "entity": "ho_s04_supplierlist",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "上次那份表"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "清单",
+          "entity": "ho_s04_supplierlist",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 2,
+      "mentions": [],
+      "unresolved": [
+        "上次那份表"
+      ],
+      "no_anchor": [
+        "两家"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "海雾项目",
+          "entity": "ho_s04_haiwu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "南屿运维组",
+          "entity": "ho_s04_nanyuops",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "运维组",
+          "entity": "ho_s04_nanyuops",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "迁移手册",
+          "entity": "ho_s04_migrationmanual",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "手册",
+          "entity": "ho_s04_migrationmanual",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "Cursor",
+          "entity": "ho_s04_cursor",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 6,
+      "mentions": [
+        {
+          "surface": "Cursor",
+          "entity": "ho_s04_cursor",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "另一个同事"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "清单",
+          "entity": "ho_s04_supplierlist",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "手册",
+          "entity": "ho_s04_migrationmanual",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s04",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "手册",
+          "entity": "ho_s04_migrationmanual",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "清单",
+          "entity": "ho_s04_supplierlist",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "半小时"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "临江数据平台组",
+          "entity": "ho_s05_pingtai",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "C 座 501",
+          "entity": "ho_s05_c501",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "今天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "老曾",
+          "entity": "ho_s05_zengxian",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "501",
+          "entity": "ho_s05_c501",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "物业"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "曾宪",
+          "entity": "ho_s05_zengxian",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "锦城",
+          "entity": "ho_s05_jincheng",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "平台组",
+          "entity": "ho_s05_pingtai",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "月报",
+          "entity": "ho_s05_monthly",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "锦城",
+          "entity": "ho_s05_jincheng",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "平台组",
+          "entity": "ho_s05_pingtai",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "月报",
+          "entity": "ho_s05_monthly",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "当天",
+        "周五"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "C 座 501",
+          "entity": "ho_s05_c501",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "物业"
+      ],
+      "no_anchor": [
+        "明早"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "老曾",
+          "entity": "ho_s05_zengxian",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 6,
+      "mentions": [
+        {
+          "surface": "平台组",
+          "entity": "ho_s05_pingtai",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "新来的实习生",
+        "对接人"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "锦城",
+          "entity": "ho_s05_jincheng",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "C 座 501",
+          "entity": "ho_s05_c501",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "下周一"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s05",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "501",
+          "entity": "ho_s05_c501",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "曾宪",
+          "entity": "ho_s05_zengxian",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "这两天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "年度审计",
+          "entity": "ho_s06_shenji",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "审计季",
+          "entity": "ho_s06_shenji",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "蒋闻",
+          "entity": "ho_s06_jiangwen",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "三个人"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "婚礼",
+          "entity": "ho_s06_hunli",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "婚礼",
+          "entity": "ho_s06_hunli",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "年度审计",
+          "entity": "ho_s06_shenji",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "团建",
+          "entity": "ho_s06_tuanjian",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "老蒋",
+          "entity": "ho_s06_jiangwen",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "团建",
+          "entity": "ho_s06_tuanjian",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "蒋闻",
+          "entity": "ho_s06_jiangwen",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "一个同事"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 6,
+      "mentions": [
+        {
+          "surface": "蒋闻",
+          "entity": "ho_s06_jiangwen",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "审计",
+          "entity": "ho_s06_shenji",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "审计",
+          "entity": "ho_s06_shenji",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "团建",
+          "entity": "ho_s06_tuanjian",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "婚礼",
+          "entity": "ho_s06_hunli",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s06",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "分场表",
+          "entity": "ho_s06_scenesheet",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "周四"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "法务组的钟鸣",
+          "entity": "ho_s07_zhongming_fawu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "大学室友钟鸣",
+          "entity": "ho_s07_zhongming_shiyou",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "论坛那个帖子",
+        "合同附件"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "法务组的钟鸣",
+          "entity": "ho_s07_zhongming_fawu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "谭雅",
+          "entity": "ho_s07_tanya",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "大学室友钟鸣",
+          "entity": "ho_s07_zhongming_shiyou",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "帖子"
+      ],
+      "no_anchor": [
+        "昨天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "陆沉",
+          "entity": "ho_s07_luchen",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [
+        "帖",
+        "附件"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "老陆",
+          "entity": "ho_s07_luchen",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "小谭",
+          "entity": "ho_s07_tanya",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "大学室友钟鸣",
+          "entity": "ho_s07_zhongming_shiyou",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "帖子"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [
+        "两个钟鸣",
+        "帖子",
+        "还有人"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "谭雅",
+          "entity": "ho_s07_tanya",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "法务组的钟鸣",
+          "entity": "ho_s07_zhongming_fawu",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s07",
+      "turn_index": 8,
+      "mentions": [],
+      "unresolved": [
+        "帖子"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "澄海财务群",
+          "entity": "ho_s08_chenghai_caiwu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "方睿",
+          "entity": "ho_s08_fangrui",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "对账表",
+          "entity": "ho_s08_duizhangbiao",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "今天",
+        "上周"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "段思远",
+          "entity": "ho_s08_duansiyuan",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "八百多"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 2,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "方睿",
+          "entity": "ho_s08_fangrui",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "老段",
+          "entity": "ho_s08_duansiyuan",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "今天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "澄海财务群",
+          "entity": "ho_s08_chenghai_caiwu",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "澄海财务群",
+          "entity": "ho_s08_chenghai_caiwu",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "方睿",
+          "entity": "ho_s08_fangrui",
+          "speaker": null,
+          "role": "addressee"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s08",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "段思远",
+          "entity": "ho_s08_duansiyuan",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "新来的会计"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "青枫剧场",
+          "entity": "ho_s09_qingfengtheater",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "苏禾",
+          "entity": "ho_s09_suhe",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "夜里十一点"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "苏禾",
+          "entity": "ho_s09_suhe",
+          "speaker": null,
+          "role": "speaker"
+        },
+        {
+          "surface": "顾南",
+          "entity": "ho_s09_gunan",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "剧场",
+          "entity": "ho_s09_qingfengtheater",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "林澜",
+          "entity": "ho_s09_linlan",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "排练厅",
+          "entity": "ho_s09_rehearsalhall",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "林澜",
+          "entity": "ho_s09_linlan",
+          "speaker": null,
+          "role": "speaker"
+        },
+        {
+          "surface": "小顾",
+          "entity": "ho_s09_gunan",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "苏禾",
+          "entity": "ho_s09_suhe",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "林澜",
+          "entity": "ho_s09_linlan",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "顾南",
+          "entity": "ho_s09_gunan",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "一个实习生"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "顾南",
+          "entity": "ho_s09_gunan",
+          "speaker": null,
+          "role": "speaker"
+        },
+        {
+          "surface": "剧场",
+          "entity": "ho_s09_qingfengtheater",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "一个场务"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [],
+      "no_anchor": [
+        "十一点半"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "苏禾",
+          "entity": "ho_s09_suhe",
+          "speaker": null,
+          "role": "speaker"
+        },
+        {
+          "surface": "排练厅",
+          "entity": "ho_s09_rehearsalhall",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s09",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "顾南",
+          "entity": "ho_s09_gunan",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "林澜",
+          "entity": "ho_s09_linlan",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "苏老师",
+          "entity": "ho_s09_suhe",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "Kimi CLI",
+          "entity": "ho_s10_kimi_cli",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "向量索引任务",
+          "entity": "ho_s10_index_job",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "齐远",
+          "entity": "ho_s10_qiyuan",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "索引任务",
+          "entity": "ho_s10_index_job",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "老齐",
+          "entity": "ho_s10_qiyuan",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "索引任务",
+          "entity": "ho_s10_index_job",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "索引快照",
+          "entity": "ho_s10_snapshot",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "Kimi CLI",
+          "entity": "ho_s10_kimi_cli",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "二十分钟"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "检索回归表",
+          "entity": "ho_s10_regress_sheet",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "两个点"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "回归表",
+          "entity": "ho_s10_regress_sheet",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "一条查询"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [
+        "那条查询"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "Kimi CLI",
+          "entity": "ho_s10_kimi_cli",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "检索服务",
+          "entity": "ho_s10_retrieval_service",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "回归表",
+          "entity": "ho_s10_regress_sheet",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s10",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "检索回归表",
+          "entity": "ho_s10_regress_sheet",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "索引快照",
+          "entity": "ho_s10_snapshot",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "老齐",
+          "entity": "ho_s10_qiyuan",
+          "speaker": null,
+          "role": "addressee"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "江月",
+          "entity": "ho_s11_jiangyue",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "社区医院",
+          "entity": "ho_s11_clinic",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "魏阿姨",
+          "entity": "ho_s11_wei_ayi",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "血压计",
+          "entity": "ho_s11_bp_monitor",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "魏姨",
+          "entity": "ho_s11_wei_ayi",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "血压计",
+          "entity": "ho_s11_bp_monitor",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "五分钟"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "小月",
+          "entity": "ho_s11_jiangyue",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "空气炸锅",
+          "entity": "ho_s11_air_fryer",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "空气炸锅",
+          "entity": "ho_s11_air_fryer",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "二十分钟"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "炸锅",
+          "entity": "ho_s11_air_fryer",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "魏阿姨",
+          "entity": "ho_s11_wei_ayi",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "说明书"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 5,
+      "mentions": [
+        {
+          "surface": "魏姨",
+          "entity": "ho_s11_wei_ayi",
+          "speaker": null,
+          "role": "quoted"
+        }
+      ],
+      "unresolved": [
+        "说明书"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 6,
+      "mentions": [],
+      "unresolved": [
+        "量的数",
+        "一个本子"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s11",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "江月",
+          "entity": "ho_s11_jiangyue",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "社区医院",
+          "entity": "ho_s11_clinic",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "重阳节",
+          "entity": "ho_s11_chongyang",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "魏阿姨",
+          "entity": "ho_s11_wei_ayi",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 0,
+      "mentions": [
+        {
+          "surface": "蓝湾",
+          "entity": "ho_s12_lanwan_pm",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "回滚手册",
+          "entity": "ho_s12_rollback_manual",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "复盘",
+          "entity": "ho_s12_retro",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "有人"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 1,
+      "mentions": [
+        {
+          "surface": "罗一鸣",
+          "entity": "ho_s12_luo_yiming",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "回滚手册",
+          "entity": "ho_s12_rollback_manual",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 2,
+      "mentions": [
+        {
+          "surface": "老罗",
+          "entity": "ho_s12_luo_yiming",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "发布清单",
+          "entity": "ho_s12_release_list",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "蓝湾产品组",
+          "entity": "ho_s12_lanwan_pm",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "今天"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 3,
+      "mentions": [
+        {
+          "surface": "发布单",
+          "entity": "ho_s12_release_list",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "潘越",
+          "entity": "ho_s12_pan_yue",
+          "speaker": null,
+          "role": "addressee"
+        },
+        {
+          "surface": "网关",
+          "entity": "ho_s12_gateway",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": [
+        "三份"
+      ]
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 4,
+      "mentions": [
+        {
+          "surface": "预发环境",
+          "entity": "ho_s12_staging",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "回滚手册",
+          "entity": "ho_s12_rollback_manual",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [
+        "那一步"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 5,
+      "mentions": [],
+      "unresolved": [
+        "那步"
+      ],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 6,
+      "mentions": [
+        {
+          "surface": "发布清单",
+          "entity": "ho_s12_release_list",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "潘越",
+          "entity": "ho_s12_pan_yue",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 7,
+      "mentions": [
+        {
+          "surface": "老罗",
+          "entity": "ho_s12_luo_yiming",
+          "speaker": null,
+          "role": "quoted"
+        },
+        {
+          "surface": "蓝湾",
+          "entity": "ho_s12_lanwan_pm",
+          "speaker": null,
+          "role": "mentioned"
+        },
+        {
+          "surface": "回滚手册",
+          "entity": "ho_s12_rollback_manual",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    },
+    {
+      "session_key": "ses-a1-holdout-s12",
+      "turn_index": 8,
+      "mentions": [
+        {
+          "surface": "发布清单",
+          "entity": "ho_s12_release_list",
+          "speaker": null,
+          "role": "mentioned"
+        }
+      ],
+      "unresolved": [],
+      "no_anchor": []
+    }
+  ]
+}

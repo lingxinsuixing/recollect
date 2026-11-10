@@ -1,0 +1,11 @@
+[Unit]
+Description=recollect session collector (edge-side, zero-model)
+Documentation=https://github.com/lingxinsuixing/recollect
+After=network-online.target
+
+[Service]
+Type=oneshot
+# 采集器只做扫描/转换/提交，不跑模型；与蒸馏完全分离。
+ExecStart=/abs/path/recollect-hub collect --config /abs/path/collect.toml --data-dir /abs/path/data --json
+# 单实例：上一轮没结束就跳过这一轮（采集是短任务，正常不会触发）。
+Nice=10

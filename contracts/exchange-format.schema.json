@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Recollect exchange file (C1) v1",
+  "description": "Machine-readable shape of the C1 intake contract. Property names are byte-identical to the Rust field names (snake_case). Unknown properties are REJECTED on this input side (plan Task 2 Step 5); the GOALS 5.11 'ignore unknown fields' evolution rule governs only what we emit (the C2 agent-facing tool results), never what an external exporter feeds in.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format_version", "sessions"],
+  "properties": {
+    "format_version": {
+      "type": "integer"
+    },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["session_key", "device_id", "source_agent", "turns"],
+        "properties": {
+          "session_key": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "source_agent": {
+            "type": "string"
+          },
+          "machine": {
+            "type": "string"
+          },
+          "project_hint": {
+            "type": "string"
+          },
+          "last_saved_at_ms": {
+            "type": "integer"
+          },
+          "turns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["role", "body", "created_at_ms"],
+              "properties": {
+                "turn_uid": {
+                  "type": "string"
+                },
+                "seq": {
+                  "type": "integer"
+                },
+                "tier": {
+                  "type": "string",
+                  "enum": ["id_bearing", "stable_seq", "content_only"]
+                },
+                "role": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "created_at_ms": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

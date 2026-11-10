@@ -1,0 +1,18 @@
+{
+  "cases": [
+    {
+      "kind": "hit",
+      "query": "同分合成词甲",
+      "expected_title": "同分合成词甲"
+    },
+    {
+      "kind": "silent",
+      "query": "格子测试"
+    },
+    {
+      "kind": "anti_noise",
+      "query": "会议 记录 归档",
+      "expected_title": "长行低分卡"
+    }
+  ]
+}

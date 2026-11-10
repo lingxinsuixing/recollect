@@ -1,0 +1,24 @@
+[package]
+name = "rc-ledger"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+# W38a 刀 A：turn_shadow 的增量写与全量重建都要走索引层的分词尺子
+# （`rc_index::analyzer::row_doc`）。守卫只约束 rc-index 的出边，反边合法
+# （设计 2026-11-08-w38a-transcript-search §二.1；记忆侧对称形状是 rc-index→rc-memory）。
+rc-index = { path = "../rc-index" }
+rusqlite = { workspace = true }
+sha2 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+tempfile = { workspace = true }
+rc-net = { path = "../rc-net" }
+# W38a 刀 A 的集成钉（tests/turn_shadow.rs）：增量/闸/snippet/幂等/空读数五颗钉
+# 都要"insert_batch 写入 → search_turns 检索"端到端，且 Viewer 住在 rc-memory——
+# 两条都只在测试里链接，生产代码的反向依赖没有发生变化。
+rc-search = { path = "../rc-search" }
+rc-memory = { path = "../rc-memory" }

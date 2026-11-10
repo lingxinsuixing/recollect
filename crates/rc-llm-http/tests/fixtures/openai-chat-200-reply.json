@@ -1,0 +1,19 @@
+{
+  "id": "0000000000000000000000000000000f",
+  "created": 1792000000,
+  "model": "agnes-3.0-flash",
+  "object": "chat.completion",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "{\"rows\":[{\"turn_uid\":\"t-a1\",\"kind\":\"fact\"}]}",
+        "role": "assistant"
+      },
+      "provider_specific_fields": {}
+    }
+  ],
+  "usage": { "completion_tokens": 21, "prompt_tokens": 539, "total_tokens": 560 },
+  "metadata": { "weight_version": "default" }
+}

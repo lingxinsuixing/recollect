@@ -1,0 +1,13 @@
+[package]
+name = "rc-llm-http"
+version.workspace = true
+edition.workspace = true
+
+# 依赖清单是边界声明：`ureq` 只在这一份清单里出现（判据 N4：网络出点唯一）。
+[dependencies]
+rc-llm = { path = "../rc-llm" }
+ureq = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

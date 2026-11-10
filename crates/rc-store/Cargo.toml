@@ -1,0 +1,20 @@
+[package]
+name = "rc-store"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+rusqlite = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+# 快照的文件面要算文件 sha256 与逻辑内容摘要（阶段 4 T3-A）。`sha2` 已在 workspace 依赖里，
+# `rc-memory` 也用它 ⇒ `Cargo.lock` 不新增包，只是本 crate 的依赖清单多一行。
+sha2 = { workspace = true }
+jieba-rs = { workspace = true }
+
+[dev-dependencies]
+trybuild = { workspace = true }
+tempfile = { workspace = true }
+serde_json = { workspace = true }
+
+[build-dependencies]

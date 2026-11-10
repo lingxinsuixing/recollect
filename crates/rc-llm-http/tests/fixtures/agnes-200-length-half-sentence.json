@@ -1,0 +1,8 @@
+{
+  "id": "6666666666666666666666666666666f",
+  "created": 1792000000,
+  "model": "agnes-3.0-flash",
+  "object": "chat.completion",
+  "choices": [ { "finish_reason": "length", "index": 0, "message": { "content": "Hel", "role": "assistant" } } ],
+  "usage": { "completion_tokens": 1, "prompt_tokens": 512, "total_tokens": 513 }
+}

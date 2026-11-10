@@ -1,0 +1,113 @@
+# 采集器配置（每台机器一份）
+#
+# 形状与规则见 docs/2026-11-10-collector-standardization.md（或仓库设计档）。
+# 这份文件是本机可信配置：`converter` 直接 exec（不经 shell），改配置等于获得本机执行权。
+#
+# 用法：
+#   recollect-hub collect --config collect.toml --data-dir <数据目录> --json
+#   recollect-hub collect --status --data-dir <数据目录>          # 只读水位
+#   recollect-hub collect --config collect.toml --source qoder --dry-run --json
+#   recollect-hub collect --config collect.toml --backfill --json  # 允许历史回填
+#
+# 两道帽是全局（跨源）按日计：
+#   max_files_per_run —— 一轮最多处理几个文件
+#   max_turns_per_day —— 一天最多收多少“新增 human+agent 轮”
+#
+# 回填语义（P1）：
+#   日常增量与历史回填是两条独立的额度，互不消耗（都是滚动 24 小时窗口）：
+#     window  —— 日常增量，所有源共用，上限 max_turns_per_day
+#     backfill —— 历史回填专用，上限 max_backfill_turns_per_day（缺省 20000）
+#   旗标：
+#     --backfill              让尚无水位的 sqlite 源从 0 全量灌（缺省是 seed，只收未来）
+#     --backfill-force        连已有水位的源也从 0 重灌（幂等但昂贵），默认关
+#     --backfill-max-turns N  单轮回填的轮数上限（缺省 2000）：触顶 ⇒ 本轮停止、剩余顺延
+#     --backfill-max-pending N 蒸馏积压背压：积压超过它就拒绝本轮回填（退出码仍是 0）
+#   历史 vs 日常（sqlite 源）：判据是「水位落后当前数据超过 24 小时」——
+#   max(当前数据) - 水位 > 24h ⇒ 历史缺口，走回填额度；否则走日常额度。
+#   无旗标时历史缺口的源也会自动回填（走回填额度，受背压闸约束）。
+
+[limits]
+quiet_ms = 600000            # 会话静默窗口：10 分钟（停笔后才收）
+max_files_per_run = 3
+max_turns_per_day = 300
+max_backfill_turns_per_day = 20000  # 24 小时回填预算（滚动窗口）
+
+# ── Qoder：本机全部工作区 ────────────────────────────────────────────────
+[[source]]
+name = "qoder"
+kind = "files"
+root = "C:/Users/<you>/.qoder-cn/projects"
+glob = "*/*.jsonl"           # 每个工作区目录下的会话文件；多段通配逐段匹配
+converter = [
+  "python3", "/path/to/recollect/tools/converters/qoder_v1.py",
+  "{segment}", "--out-dir", "{out}",
+  "--device", "local-qoder", "--source-agent", "qoder",
+  "--machine", "local", "--project-mode", "dir",
+]
+device_id = "local-qoder"
+source_agent = "qoder"
+project = "session"          # Qoder 由转换器按会话 directories 推项目名
+
+# ── MiniMax Code：本机 sqlite 库 ─────────────────────────────────────────
+# 首跑默认只收“未来”（把水位种子设为当前最大值），--backfill 才从 0 起。
+# cursor_sql 取的就是“当前数据”的最大值：判历史缺口只看它与水位差多少，
+# 不再需要第二次查询取库内最小时间。
+[[source]]
+name = "mcode"
+kind = "sqlite"
+db = "C:/Users/<you>/.minimax/v2/sqlite/runtime-state.sqlite"
+cursor_sql = "SELECT COALESCE(MAX(created_at_ms),0) FROM local_runtime_message_rows"
+converter = [
+  "python3", "/path/to/recollect/tools/converters/mcode_v1.py",
+  "{out}/mcode.v1.json",
+  "--db", "C:/Users/<you>/.minimax/v2/sqlite/runtime-state.sqlite",
+  "--since-ms", "{since_ms}",
+  "--principal-id", "p-xiaolong",
+]
+device_id = "local-mcode"
+source_agent = "mcode"
+project = "session"
+
+# ── DSH（小鲸鱼）：整文件压缩的会话库 ───────────────────────────────────
+# DSH 的会话是 **zstd 压缩的整份事件流**：字节偏移增量对它没有意义
+# （不能切压缩流），所以用 kind = "whole"：
+#   - 整份文件交给转换器，转换器自己读它、写 v1 到 {out}；
+#   - {segment} 是**源文件的原始路径**（不复制、不切段）；
+#   - 水位记 {mtime_ms, size, head_sha256}，文件变了就整份重转
+#     （旧轮由 hub 的内容哈希幂等键吸收成 duplicate，不会重复入库）。
+# glob 是多段通配：`<项目目录>/<会话目录>/session.v4.jsonl.zstd`。
+[[source]]
+name = "dsh"
+kind = "whole"
+root = "C:/Users/<you>/.dsh/sessions"
+glob = "*/*/session.v4.jsonl.zstd"
+converter = [
+  "python3", "/path/to/recollect/tools/converters/dsh_v1.py",
+  "{segment}", "--out-dir", "{out}",
+  "--project-mode", "dir",          # 按会话头里的 cwd 推逻辑项目名
+  "--device", "local-dsh", "--source-agent", "dsh",
+  "--machine", "local",
+]
+device_id = "local-dsh"
+source_agent = "dsh"
+project = "session"
+
+# ── Hermes：本机 sqlite 会话库 ──────────────────────────────────────────
+# 首跑同样只收“未来”；--backfill 才从 0 起。
+# cursor_sql 取 messages 表的最大时间（毫秒）：与转换器的 --since-ms 同一口径，
+# 两边都用 `timestamp*1000+0.5` 取整 ⇒ 水位与轮时间不会差 1 毫秒。
+[[source]]
+name = "hermes"
+kind = "sqlite"
+db = "C:/Users/<you>/AppData/Local/hermes/state.db"
+cursor_sql = "SELECT COALESCE(MAX(CAST(timestamp*1000+0.5 AS INTEGER)),0) FROM messages"
+converter = [
+  "python3", "/path/to/recollect/tools/converters/hermes_v1.py",
+  "{out}/hermes.v1.json",
+  "--db", "C:/Users/<you>/AppData/Local/hermes/state.db",
+  "--since-ms", "{since_ms}",
+  "--principal-id", "p-xiaolong",
+]
+device_id = "local-hermes"
+source_agent = "hermes-agent"
+project = "session"

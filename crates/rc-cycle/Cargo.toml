@@ -1,0 +1,29 @@
+[package]
+name = "rc-cycle"
+version.workspace = true
+edition.workspace = true
+
+# 依赖清单是这一层的边界声明（同 `rc-llm` 的写法：清单本身就是判据的落点）。
+# 搬进来的管线只经这七条边触达库面与 LLM 面：
+# - `rc-store`：`Root` / `StoreError` / `ddl` 与 `CapReport`（资格判定与 `schema_version`）；
+# - `rc-memory`：段 0 的抑制前置扫描、注意力扫描、重影与复核；
+# - `rc-distill`：抽取/判同/审核/推导四支作业（推导段经 `rc_distill::derive` 触达，
+#   所以本清单不另列 `rc-derive`——那条边在 `rc-distill` 的清单里已经声明过一次）；
+# - `rc-ledger`：水位、计数器与轮号；
+# - `rc-llm`：`JobFamily` / `LlmBackend` / `LlmFailure`（账本自己那点累加在本层，不在 `rc-llm`）；
+# - `rc-index`：每轮收尾的影子重建；
+# - `serde`：`CycleOut` 的 `Serialize`（`serde_json` 不在这里：本层不打印、不序列化）。
+# **不依赖** hub / rc-net / 文件系统：这一层不读钟、不读环境变量，`now_ms` 由调用方递进来。
+[dependencies]
+rc-store = { path = "../rc-store" }
+rc-memory = { path = "../rc-memory" }
+rc-distill = { path = "../rc-distill" }
+rc-ledger = { path = "../rc-ledger" }
+rc-llm = { path = "../rc-llm" }
+rc-index = { path = "../rc-index" }
+serde = { workspace = true }
+
+# example `scan_timing` 的临时库：播种一份、复制五份、每份量一次扫描（派发档 §二）。
+# 只进 dev-dependencies：生产管线的依赖清单（上面七条边）一个字节都不动。
+[dev-dependencies]
+tempfile = { workspace = true }

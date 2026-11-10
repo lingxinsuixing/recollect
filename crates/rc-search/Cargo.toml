@@ -1,0 +1,26 @@
+[package]
+name = "rc-search"
+version.workspace = true
+edition.workspace = true
+
+# 依赖清单是守卫 3/V6 的落点：这里**没有** `rc-ledger`、`rc-agent`（排序方向是反的：
+# `rc-search` 消费 `rc-index`，`rc-agent` 消费 `rc-search`），也没有任何浮点 crate——
+# 匹配度是整数定点（见 `src/score.rs` 的开头注释），浮点一旦进来，"阈值定在哪都不算错"
+# 那一族不可复现就回来了。`serde` 按任务 5 的依赖清单声明；任务 6 起 `gate::Form` 与
+# `gate::GateCell` 有序列化形状（snake_case 的分型名就是运维读数本身），所以又补了 `serde_json`。
+[dependencies]
+rc-store = { path = "../rc-store" }
+rc-memory = { path = "../rc-memory" }
+rc-index = { path = "../rc-index" }
+# W38a 刀 A（2026-11-08）：`transcript.rs` 的转录检索面要在 transcript.db 上跑 FTS MATCH
+# 与 JOIN（`TranscriptHandle::conn()` 的 SQL 逃生口），rusqlite 是它的编译前提——
+# 内部 crate 边一条没加（上面的注释原文仍然成立），这条只补外部 SQL 驱动。
+rusqlite = { workspace = true }
+serde = { workspace = true }
+# `GateCell::slug()` 的渲染处：分型文本只有一个家（`serde_json::to_value` 走派生的 Serialize），
+# 不在这里手写第五份 slug 表。`GateCell`/`Form` 的 snake_case 序列化形状因此就是它的读数名。
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

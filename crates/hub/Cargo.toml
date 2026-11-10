@@ -1,0 +1,66 @@
+[package]
+name = "hub"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "recollect-hub"
+path = "src/main.rs"
+
+[dependencies]
+rc-contract = { path = "../rc-contract" }
+rc-store = { path = "../rc-store" }
+rc-ledger = { path = "../rc-ledger" }
+rc-index = { path = "../rc-index" }
+# rc-llm 与 rc-distill 是 `cycle once` 带的两条边。rc-llm 在这里只用来拿 `LlmBackend`
+# 这个 trait 与 `JobFamily` 这一个枚举——它的依赖清单是空的（边界①），所以"hub 能读文件"
+# 这件事不因为它进依赖图而改变任何性质。
+rc-llm = { path = "../rc-llm" }
+# §4.8 ② 的第二条座位来源带来的两条边（N1 那一格要求 hub 的正式依赖树**必列** `rc-llm-http`，
+# 它此前只在 `rc-llm-http` 自己的测试里被用过，装配面一直没接上）。
+# 两条都不把出网能力搬进 hub：`ureq::` 那个 token 仍然只住 `crates/rc-llm-http/src`
+# （判据 4 的 `only` 那一支），hub 侧只从 `transport::agent()` 拿到一个 agent；
+# 而 `rc-llm-cfg` 只交出 `llm.toml` 的**形状**——密钥值一律住在 `secret_ref` 指向的那个箱里，
+# 这一批没有读它的手（裁定 A）。
+rc-llm-http = { path = "../rc-llm-http" }
+rc-llm-cfg = { path = "../rc-llm-cfg" }
+# B2a-2：`secret` 子命令的箱格式与私有落盘都只从 `rc-secret` 拿——hub 不复制文件格式，
+# 也不复制权限规则。32 字节主口令用 workspace 的 `getrandom`（与 rc-secret 同一版本）。
+rc-secret = { path = "../rc-secret" }
+getrandom = { workspace = true }
+rc-distill = { path = "../rc-distill" }
+rc-memory = { path = "../rc-memory" }
+# H3：`hub handoff prune` 读/写 `core.db` 的加密载荷。只走 `CoreStore` 的公开方法，
+# 不碰密文、不拼表名（与 MCP 面同一个入口）——hub 因此多一条到核心陪伴层的边。
+rc-core = { path = "../rc-core" }
+# B2b-1：cycle 管线（读数、判定、错误面、扫描节奏与账本）搬进 `rc-cycle`，hub 只留打印、
+# 退出码与装配（`finish_cycle` / `run_cycle_with` / replay 座位）。行为不动：既有的
+# `tests/cycle_once.rs` 是这一搬的回归闸。
+rc-cycle = { path = "../rc-cycle" }
+# 传输/协议层：hub 是 Handler 的实现者，rc-net 不认识 Root。
+rc-net = { path = "../rc-net" }
+# W39 刀 C：中心转录只读路由复用 rc-search 的四个读数（可见性判定只有
+# `rc_search::transcript::session_visible` 一处实现）——hub 不复制判定、不写第二份
+# 可见性 SQL。rc-search 的底层依赖（rc-memory/rc-index/rc-store）hub 均已持有。
+rc-search = { path = "../rc-search" }
+# 采集器：`hub collect` 只做 sink 的装配（v1 字节 → `hub::ingest`），扫描/水位/转换器
+# 调用全在 rc-collect；hub 不复制任何扫描或半行切段逻辑。
+rc-collect = { path = "../rc-collect" }
+toml = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+# 恢复的 `check_backup` 与整表替换直接开备份文件（只读校验 + `ATTACH`），
+# 生产代码从此 import rusqlite；`VACUUM INTO` 的文件面仍复用 `rc_store::snapshot`。
+rusqlite = { workspace = true }
+# 恢复加密备份时把明文落到临时目录；临时目录由 tempfile 管生命周期。
+tempfile = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+# `tests/handoff_cli.rs` 用与生产同一个入口造交接条。
+rc-core = { path = "../rc-core" }
+# `rusqlite` 已移到生产依赖：恢复的 `check_backup` 与整表替换直接开连接，生产代码从此 import rusqlite。
+# `ingest_http.rs` 要在测试里造压缩体。只在 dev 依赖里——`hub` 的生产代码不直接碰 flate2。
+flate2 = { workspace = true }

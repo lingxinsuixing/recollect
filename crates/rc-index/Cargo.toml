@@ -1,0 +1,19 @@
+[package]
+name = "rc-index"
+version.workspace = true
+edition.workspace = true
+
+# 依赖清单是守卫 3/V6 的落点：这里**没有** `rc-ledger`、`rc-contract`、`rc-search`。
+# 正文归一在 `rc-memory::keys` 已经落好，索引层不需要再拿一次导出格式；
+# 检索排序方向是反的（`rc-search` 消费本 crate），所以本 crate 也不许依赖它。
+[dependencies]
+rc-store = { path = "../rc-store" }
+rc-memory = { path = "../rc-memory" }
+rusqlite = { workspace = true }
+jieba-rs = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+serde_json = { workspace = true }

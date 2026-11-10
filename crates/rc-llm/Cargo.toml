@@ -1,0 +1,13 @@
+[package]
+name = "rc-llm"
+version.workspace = true
+edition.workspace = true
+
+# 依赖清单是这一层的边界声明（同 rc-search 的写法：清单本身就是判据的落点）。
+[dependencies]
+# 空。这里没有 rc-store / rc-ledger / rc-memory 是**边界声明**：
+# LLM 面拿不到任何句柄，所以"故障期不推水位、不写库"不是纪律而是类型层事实。
+
+[dev-dependencies]
+# 同样空：三条用例（`tests/failmatrix.rs`、`tests/wallclock.rs`、`tests/mock_is_test_only.rs`）
+# 只需要 std——预算与失败态都是纯函数，没有临时目录、没有数据库、没有时钟可搭。
